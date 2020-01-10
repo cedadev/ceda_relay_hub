@@ -26,7 +26,7 @@ class Sentinel_Product(object):
     #S3 See
     #PRODUCT_NAME_PARAMS = {'S1A':'0:11', 'S1B':'0:11', 'S2A':'0:19'}
     PRODUCT_NAME_PARAMS = {'S1A':'0:11', 'S1B':'0:11', 'S2A':{'S2A_OPER_PRD_MSIL1C':'0:19', 'S2A_MSIL1C':'0:10', 'S2A_MSIL2A':'0:10'}, \
-                           'S2B':{'S2B_OPER_PRD_MSIL1C':'0:19', 'S2B_MSIL1C':'0:10', 'S2B_MSIL2A':'0:10'}, 'S3A':'0:11', 'S3B':'0-11'}
+                           'S2B':{'S2B_OPER_PRD_MSIL1C':'0:19', 'S2B_MSIL1C':'0:10', 'S2B_MSIL2A':'0:10'}, 'S3A':'0:11', 'S3B':'0:11'}
 
 
     def get_product_date(self):
