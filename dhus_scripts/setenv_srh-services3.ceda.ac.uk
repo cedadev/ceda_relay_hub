@@ -1,0 +1,5 @@
+#!/bin/sh
+export PROTOCOL=http
+export DHOST=srh-services3.ceda.ac.uk
+export DLOGIN=root
+export DPASS=sc00byd00

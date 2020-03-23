@@ -1,0 +1,4 @@
+#!/bin/sh
+export DHOST=https://srh-mgmt.ceda.ac.uk/dhus
+export DLOGIN=root
+export DPASS=sc00byd00
