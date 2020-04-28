@@ -1,0 +1,7 @@
+D_SERVICEURL=https://colhub2.copernicus.eu/dhus/odata/v1
+D_SCHEDULE=0 */1 * * * ?
+D_PAGESIZE=10
+D_COPYPRODUCT=true
+D_REQUEST=stop
+D_GEOFILTER=Intersects POLYGON((-12.6 49.8,2.1 49.8,2.1 61.3,-12.6 61.3,-12.6 49.8))
+D_FILTERPARAM=startswith(Name,'S1B_IW_GRDH_')
