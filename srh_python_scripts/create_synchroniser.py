@@ -154,13 +154,6 @@ def create_synchroniser(sync_template, params, geofilter=None, label_tag=None):
     except Exception as ex:
         print(f"Unable to POST synchronizer to SRH! ({ex})")
 
-
-#sample shell script terms - works.
-#-D_SERVICELOGIN='dhr_uk_stfc' -D_SERVICEPASSWORD='oS9y8SBZ'
-#./createSynchronizer -D_LABEL='S1B_IW_SLC' -D_SERVICEURL='https://colhub2.copernicus.eu/dhus/odata/v1' -D_SCHEDULE='0 */1 * * * ?'
-# -D_PAGESIZE='10' -D_COPYPRODUCT='true' -D_FILTERPARAM="startswith(Name,'S1B_IW_GRDH_')" -D_REQUEST='start'
-# -D_GEOFILTER='Intersects(POLYGON((-12.6 49.8,2.1 49.8,2.1 61.3,-12.6 61.3,-12.6 49.8)))'  -D_LASTCREATIONDATE='2020-04-22T00:00:00'
-
 if len(sys.argv) != 6:
     print (f"Usage: {os.path.basename(sys.argv[0])} <sync params file> <creds for hub the synchroniser will run ON> <creds for hub synchroninising FROM>  <last creation date.\
       Use 'None' and will set to 00:00:00 of todays date.  Note format YYYY-MM-DDTHH:MM:SS> <bounding box config.  Use 'None' for no bboxes>")
