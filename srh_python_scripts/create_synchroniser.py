@@ -7,92 +7,9 @@ from requests.auth import HTTPBasicAuth
 import datetime
 import configparser
 
-def get_config(filename):
+from synchroniser import *
 
-    try:
-        config = configparser.RawConfigParser()
-        config.read(filename)
-
-    except Exception as ex:
-        raise Exception("Could not extract configuration from %s (%s)" % (filename, ex))
-
-    return config
-
-def get_hub_creds(filename):
-    user = None;
-    password = None
-    hub = None
-
-    if os.path.exists(filename):
-
-        config = get_config(filename)
-
-        try:
-            hub = config.get('default', 'hub')
-        except:
-            hub = None
-
-        user = config.get('default', 'user')
-        password = config.get('default', 'password')
-
-        return hub, user, password
-
-    else:
-        raise Exception("No such file: %s" % filename)
-
-def get_sync_template(geo=False):
-
-    if not geo:
-        # template based on typical ceda sycnhronizer
-        return '''<entry xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices"
-            xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
-            xmlns="http://www.w3.org/2005/Atom">
-           <id>http://localhost:8080/odata/v1/Synchronizers(0L)</id>
-           <title type="text">Synchronizer</title>
-           <updated>2015-06-29T09:32:15.922Z</updated>
-           <category term="DHuS.Synchronizer" scheme="http://schemas.microsoft.com/ado/2007/08/dataservices/scheme"/>
-           <content type="application/xml">
-              <m:properties>
-                 <d:Schedule>D_SCHEDULE</d:Schedule>
-                 <d:Request>D_REQUEST</d:Request>
-                 <d:ServiceUrl>D_SERVICEURL</d:ServiceUrl>
-                 <d:Label>D_LABEL</d:Label>
-                 <d:ServiceLogin>D_SERVICELOGIN</d:ServiceLogin>
-                 <d:ServicePassword>D_SERVICEPASSWORD</d:ServicePassword>
-                 <d:PageSize>D_PAGESIZE</d:PageSize>
-                 <d:LastCreationDate>D_LASTCREATIONDATE</d:LastCreationDate>
-                 <d:CopyProduct>D_COPYPRODUCT</d:CopyProduct>
-                 <d:FilterParam>D_FILTERPARAM</d:FilterParam>
-              </m:properties>
-           </content>
-        </entry>'''
-
-    else:
-        return '''<entry xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices"
-            xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
-            xmlns="http://www.w3.org/2005/Atom">
-           <id>http://localhost:8080/odata/v1/Synchronizers(0L)</id>
-           <title type="text">Synchronizer</title>
-           <updated>2015-06-29T09:32:15.922Z</updated>
-           <category term="DHuS.Synchronizer" scheme="http://schemas.microsoft.com/ado/2007/08/dataservices/scheme"/>
-           <content type="application/xml">
-              <m:properties>
-                 <d:Schedule>D_SCHEDULE</d:Schedule>
-                 <d:Request>D_REQUEST</d:Request>
-                 <d:ServiceUrl>D_SERVICEURL</d:ServiceUrl>
-                 <d:Label>D_LABEL</d:Label>
-                 <d:ServiceLogin>D_SERVICELOGIN</d:ServiceLogin>
-                 <d:ServicePassword>D_SERVICEPASSWORD</d:ServicePassword>
-                 <d:PageSize>D_PAGESIZE</d:PageSize>
-                 <d:LastCreationDate>D_LASTCREATIONDATE</d:LastCreationDate>
-                 <d:CopyProduct>D_COPYPRODUCT</d:CopyProduct>
-                 <d:FilterParam>D_FILTERPARAM</d:FilterParam>
-                <d:GeoFilter>D_GEOFILTER</d:GeoFilter>
-              </m:properties>
-           </content>
-        </entry>'''
-
-def create_synchroniser(sync_template, params, geofilter=None, label_tag=None):
+def create_synchroniser(sync_template, params, geofilter=None, label_tag=None, existing_synchronisers = None):
     '''
     Method to put together the various bits and create the relevant synchroniser.  Will append a label tag if needed
     :param sync_template:
@@ -113,8 +30,14 @@ def create_synchroniser(sync_template, params, geofilter=None, label_tag=None):
         sync_template = sync_template.replace(hook, value)
 
     # label
-    label = (f"{os.path.basename(params_file)}_{loc}_{datetime.datetime.now().strftime('%d%m%YT%H%M%S')}")
+    label_base = (f"{os.path.basename(params_file)}_{loc}_")
+    label = (f"{label_base}_{datetime.datetime.now().strftime('%d%m%YT%H%M%S')}")
     sync_template = sync_template.replace('D_LABEL', label)
+
+    if existing_synchronisers:
+        for used_labels in existing_synchronisers.keys():
+            if label_base in used_labels:
+                return (f"Looks like there is already a synchroniser for '{label_base} ({used_labels})'!")
 
     # source hub
     sync_template = sync_template.replace('D_SERVICELOGIN', src_uname)
@@ -132,77 +55,76 @@ def create_synchroniser(sync_template, params, geofilter=None, label_tag=None):
     if geofilter:
         sync_template = sync_template.replace('D_GEOFILTER', geofilter)
 
-    print(sync_template)
+    #print(sync_template)
+    sys.exit()
 
     # Now post to SRH hub.
+    return (post_to_hub(hub, hub_uname, hub_password, data = sync_template))
 
-    header = {"Content-type": "application/atom+xml",
-              "Accept": "application/atom+xml"}
+if __name__ == '__main__':
 
-    #sys.exit()
+    if len(sys.argv) != 6:
+        print (f"Usage: {os.path.basename(sys.argv[0])} <sync params file> <creds for hub the synchroniser will run ON> <creds for hub synchroninising FROM>  <last creation date.\
+          Use 'None' and will set to 00:00:00 of todays date.  Note format YYYY-MM-DDTHH:MM:SS> <bounding box config.  Use 'None' for no bboxes>")
+        sys.exit()
+
+    params_file = sys.argv[1] # params file
+    this_hub_creds = sys.argv[2] # creds for hub the synchroniser will run ON
+    source_hub_creds = sys.argv[3] # creds for hub synchroninising FROM
+    lastcreationdate = sys.argv[4] #last creation date.  Use "None" and will set to 00:00:00 of todays date.  Note format YYYY-MM-DDTHH:MM:SS
+    bboxes_cfg = sys.argv[5]
+
+    #todo: NOTE- source url is already in s1b_iw_grdh_UKonly file
+    src_hub, src_uname, src_password = get_hub_creds(source_hub_creds)
+
+    #todo: NOTE- source url is already in s1b_iw_grdh_UKonly file
+    hub, hub_uname, hub_password = get_hub_creds(this_hub_creds)
+
+    #get existing synchronisers, if any
     try:
-        response = requests.post(hub, data=sync_template, headers=header, auth=HTTPBasicAuth(hub_uname, hub_password))
-
-        if response.status_code != 200 or response.status_code != 201:
-            raise Exception(f"Incorrect response recieved (status: {response.status_code}; message: {response.content}")
-
-        else:
-            print(f"\nSuccessfully posted new synchronizer ({params_file}) to {hub}")
-
-            print(response.content)
+        existing_synchronisers = get_synchronisers(this_hub_creds)
 
     except Exception as ex:
-        print(f"Unable to POST synchronizer to SRH! ({ex})")
+        print (f"Cannot access hub to assess existing synchronisers: {ex}")
+        sys.exit()
 
-if len(sys.argv) != 6:
-    print (f"Usage: {os.path.basename(sys.argv[0])} <sync params file> <creds for hub the synchroniser will run ON> <creds for hub synchroninising FROM>  <last creation date.\
-      Use 'None' and will set to 00:00:00 of todays date.  Note format YYYY-MM-DDTHH:MM:SS> <bounding box config.  Use 'None' for no bboxes>")
-    sys.exit()
+    if bboxes_cfg is None or bboxes_cfg == 'None' or bboxes_cfg == 'none':
+        sync_template = get_sync_template()
 
-params_file = sys.argv[1] # params file
-this_hub_creds = sys.argv[2] #creds for hub synchroninising FROM
-source_hub_creds = sys.argv[3] # creds for hub the synchroniser will run ON
-lastcreationdate = sys.argv[4] #last creation date.  Use "None" and will set to 00:00:00 of todays date.  Note format YYYY-MM-DDTHH:MM:SS
-bboxes_cfg = sys.argv[5]
+        areas = None
 
-#todo: NOTE- source url is already in s1b_iw_grdh_UKonly file
-src_hub, src_uname, src_password = get_hub_creds(source_hub_creds)
+    else:
+        sync_template = get_sync_template(geo=True)
 
-#todo: NOTE- source url is already in s1b_iw_grdh_UKonly file
-hub, hub_uname, hub_password = get_hub_creds(this_hub_creds)
+        #get the bboxes etc from the cfg
+        bboxes = get_config(bboxes_cfg)
 
-if bboxes_cfg is None or bboxes_cfg == 'None' or bboxes_cfg == 'none':
-    sync_template = get_sync_template()
+        areas = {}
 
-    areas = None
+        # extract priority search strings
+        for bbox in bboxes.sections():
+            areas[bbox] = (bboxes.get(bbox, 'string'))
 
-else:
-    sync_template = get_sync_template(geo=True)
+    #extract params
+    if os.path.exists(params_file):
+        with open(params_file, 'r') as reader:
+            params = [i.strip() for i in reader.readlines()]
 
-    #get the bboxes etc from the cfg
-    bboxes = get_config(bboxes_cfg)
+    else:
+        print (f"No params file: {params_file}")
+        sys.exit()
 
-    areas = {}
+    if areas is None:
+        #No geographic areas
+        resp = create_synchroniser(sync_template, params, existing_synchronisers = existing_synchronisers)
 
-    # extract priority search strings
-    for bbox in bboxes.sections():
-        areas[bbox] = (bboxes.get(bbox, 'string'))
+        print (resp)
 
-#extract params
-if os.path.exists(params_file):
-    with open(params_file, 'r') as reader:
-        params = [i.strip() for i in reader.readlines()]
+    else:
+        for bbox in areas.keys():
+            resp = create_synchroniser(sync_template, params, geofilter=areas[bbox], label_tag=bbox, \
+                                existing_synchronisers = existing_synchronisers)
 
-else:
-    print (f"No params file: {params_file}")
-    sys.exit()
-
-if areas is None:
-    #No geographic areas
-    create_synchroniser(sync_template, params)
-
-else:
-    for bbox in areas.keys():
-        create_synchroniser(sync_template, params, geofilter=areas[bbox], label_tag=bbox)
+            print (resp)
 
 
