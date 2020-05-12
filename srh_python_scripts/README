@@ -1,0 +1,48 @@
+Usage:
+
+    To create a synchroniser from a template:
+    
+    create_synchroniser.py  <sync params file> <creds for hub the synchroniser will run ON> <creds for hub synchroninising FROM>  <last creation date.\
+          Use 'None' and will set to 00:00:00 of todays date.  Note format YYYY-MM-DDTHH:MM:SS> <bounding box config.  Use 'None' for no bboxes>")
+          
+        -Note that params file must relate to a suitable file for the particular hub and product level information in the srh_python_scripts/synchronizer_templates directory.
+        -Note that hub creds files must be a hub config (not in vcs) with hub credentials for source hub.  Must include hub odata url with synchronisers element
+        -Note that bounding box config if supplied must relate to a cfg in the srh_python_scripts/synchronizer_templates/bboxes directory - OR supply 'None'
+        -Note that last creation date will be set to previous 00:00:00 Hrs of todays date if None supplied.
+        
+        i.e. python create_synchroniser.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\synchronizer_templates\s1b\s1b_iw_slc_GLOB \
+                                \ C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg
+                                \ C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\colhub2.cfg
+                                \ None
+                                \ None
+                                
+        i.e. python create_synchroniser.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\synchronizer_templates\s1b\s1b_iw_slc_GLOB \
+                                \ C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg
+                                \ C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\colhub2.cfg
+                                \ 2020-12-25T12:23:23
+                                \ srh_python_scripts/synchronizer_templates/bboxes/UK_BBox.cfg
+        
+    delete_synchroniser.py <hub params file> <synchroniser ID number or 'All' to remove all. 'None' if using name> <string to match to remove. 'None' if using number> 
+    
+        -Note that hub creds files must be a hub config (not in vcs) with hub credentials for source hub.  Must include hub odata url with synchronisers element
+        -Note that synchroniser id must either be an integer relating to a particular synchroniser id, 'all' for all synchronisers or None if using name match
+        -Note that name match must be the name or substring matching synchroniser name.  Use None if not using this
+        
+        i.e. python delete_synchroniser.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg  81 None
+        i.e. python delete_synchroniser.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg  None iw_grdh
+        
+    start_stop_synchronisers.py <hub params file> <start or stop> <synchronoser id or 'None' for all> <string to match to remove. 'None' if using number>"
+    
+        -Note that hub creds files must be a hub config (not in vcs) with hub credentials for source hub.  Must include hub odata url with synchronisers element
+        -Note that start or stop must match a DHuS hub request operation.  Only start or stop in this script at the moment
+        -Note that synchroniser id must either be an integer relating to a particular synchroniser id, 'all' for all synchronisers or None if using name match
+        -Note that name match must be the name or substring matching synchroniser name.  Use None if not using this
+        
+        i.e. python start_stop_synchronisers.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg stop all None
+        i.e. python start_stop_synchronisers.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg start 81 None
+        i.e. python start_stop_synchronisers.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg start None iw_grdh
+        
+    list_synchronisers.py <hub params file>
+        -Note that hub creds files must be a hub config (not in vcs) with hub credentials for source hub.  Must include hub odata url with synchronisers element
+        
+        i.e. python list_synchronisers.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg
