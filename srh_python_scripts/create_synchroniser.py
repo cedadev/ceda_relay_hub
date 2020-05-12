@@ -37,7 +37,7 @@ def create_synchroniser(sync_template, params, geofilter=None, label_tag=None, e
     if existing_synchronisers:
         for used_labels in existing_synchronisers.keys():
             if label_base in used_labels:
-                return (f"Looks like there is already a synchroniser for '{label_base} ({used_labels})'!")
+                return (f"Looks like there is already a synchroniser for '{label_base} ({used_labels})'!"), False
 
     # source hub
     sync_template = sync_template.replace('D_SERVICELOGIN', src_uname)
@@ -55,11 +55,8 @@ def create_synchroniser(sync_template, params, geofilter=None, label_tag=None, e
     if geofilter:
         sync_template = sync_template.replace('D_GEOFILTER', geofilter)
 
-    #print(sync_template)
-    sys.exit()
+    return sync_template, True
 
-    # Now post to SRH hub.
-    return (post_to_hub(hub, hub_uname, hub_password, data = sync_template))
 
 if __name__ == '__main__':
 
@@ -82,7 +79,7 @@ if __name__ == '__main__':
 
     #get existing synchronisers, if any
     try:
-        existing_synchronisers = get_synchronisers(this_hub_creds)
+        existing_synchronisers = synchroniser_summary(get_synchronisers(this_hub_creds))
 
     except Exception as ex:
         print (f"Cannot access hub to assess existing synchronisers: {ex}")
@@ -114,16 +111,29 @@ if __name__ == '__main__':
         print (f"No params file: {params_file}")
         sys.exit()
 
+    existing_synchronisers = None
     if areas is None:
         #No geographic areas
-        resp = create_synchroniser(sync_template, params, existing_synchronisers = existing_synchronisers)
+        sync_template, cont = create_synchroniser(sync_template, params, existing_synchronisers = existing_synchronisers)
+
+        #sys.exit()
+
+        # Now post to SRH hub.
+        if cont:
+            resp = POST_to_hub(hub, hub_uname, hub_password, data=sync_template)
 
         print (resp)
 
     else:
         for bbox in areas.keys():
-            resp = create_synchroniser(sync_template, params, geofilter=areas[bbox], label_tag=bbox, \
+            sync_template, cont = create_synchroniser(sync_template, params, geofilter=areas[bbox], label_tag=bbox, \
                                 existing_synchronisers = existing_synchronisers)
+
+
+            #sys.exit()
+
+            if cont:
+                resp = POST_to_hub(hub, hub_uname, hub_password, data=sync_template)
 
             print (resp)
 
