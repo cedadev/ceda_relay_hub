@@ -127,9 +127,13 @@ def POST_to_hub(hub, hub_uname, hub_password, data, PUT = False, synchroniser_id
         print(f"Unable to POST to SRH! ({ex})")
         return None
 
-def GET_from_hub(hub_config):
+def GET_from_hub(hub_config, odata_stub=None):
 
     hub, hub_uname, hub_password = get_hub_creds(hub_config)
+
+    #add stub if needed
+    if odata_stub:
+        hub = f"{hub}/{odata_stub}"
 
     return requests.get(hub, auth=HTTPBasicAuth(hub_uname, hub_password))
 
@@ -138,18 +142,6 @@ def PUT_to_hub_DEP(hub_config, template):
     hub, hub_uname, hub_password = get_hub_creds(hub_config)
 
     return requests.put(url, auth=HTTPBasicAuth(hub_uname, hub_password))
-
-
-def parse_response_DEP(content):
-
-    # parse xml response to get sycnhroniser names
-    try:
-        return ET.fromstring(content)
-
-    except Exception as ex:
-        print(f'Error: couldnt extract response as xml ({ex})')
-        sys.exit()
-
 
 def get_existing_details(content):
 
@@ -263,11 +255,10 @@ def synchroniser_entries_request(tree, request = 'stop'):
 
     return entries
 
-
 def get_synchronisers(hub_config):
     #get full response from hub on all synchronisers
 
-    response = GET_from_hub(hub_config)
+    response = GET_from_hub(hub_config, odata_stub='Synchronizers')
 
     return get_existing_details(response.content)
 

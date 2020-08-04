@@ -9,6 +9,7 @@ from synchroniser import *
 if __name__ == '__main__':
 
     try:
+        #Synchronizers
         synchronisers = synchroniser_summary(get_synchronisers(sys.argv[1]))
 
     except Exception as ex:
