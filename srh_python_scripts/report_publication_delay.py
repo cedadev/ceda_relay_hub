@@ -36,4 +36,4 @@ for uid in uids:
 
 avg_hrs, avg_mins = average_delay_hours(delays)
 
-print (f"\nAverage publication delay: {avg_hrs} hrs {avg_mins} mins for {len(uids)} records from {hub_domain}")
+print (f"Average publication delay: {avg_hrs} hrs {avg_mins} mins for {len(uids)} records from {hub_domain}")
