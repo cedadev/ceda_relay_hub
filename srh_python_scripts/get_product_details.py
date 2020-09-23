@@ -2,6 +2,7 @@ import os, sys
 from synchroniser import *
 from datetime import datetime
 from urllib.parse import urlparse
+import math
 
 '''
 Run from shell after parsing dhus log file for successfully downloaded files for UID's using shell incantation command like this:
@@ -41,27 +42,59 @@ def get_product_details(hub_config, uid):
             creation_date = datetime.strptime(root.find(CR_DATE_XP).text, '%Y-%m-%dT%H:%M:%S.%f')
             ingestion_date = datetime.strptime(root.find(IN_DATE_XP).text, '%Y-%m-%dT%H:%M:%S.%f')
 
-            # whats the difference
+            # whats the difference - timedelta object
             publication_delay = ingestion_date - creation_date
 
-            if publication_delay.days < 1:
-                days = 0
-            else:
-                days = int(publication_delay.days)
-
-            hrs = int(publication_delay.seconds / 3600)
-            mins = int((publication_delay.seconds % 3600) / 60)
-            secs = publication_delay.seconds - ((hrs * 3600) + (mins * 60))
-
-            msg = f"Product {uid} on hub {hub_domain}: publication delay (Days - HH:MM:SS): {str(days).zfill(2)} - {str(hrs).zfill(2)}:{str(mins).zfill(2)}:{str(secs).zfill(2)}"
+            return hub_domain, publication_delay
 
         else:
             raise Exception(f"Hub return code: {content.status_code}")
 
     except Exception as ex:
-        msg = f"Cannot extract data on {uid} ({ex})"
+        raise Exception (f"Cannot extract data on {uid} ({ex})")
 
-    print(msg)
+def analyse_delay(publication_delay):
+    '''
+    Method to pretty print report based on days and seconds
+    :return:
+    '''
+
+    if publication_delay.days < 1:
+        days = 0
+    else:
+        days = int(publication_delay.days)
+
+    hrs = int(publication_delay.seconds / 3600)
+    mins = int((publication_delay.seconds % 3600) / 60)
+    secs = publication_delay.seconds - ((hrs * 3600) + (mins * 60))
+
+    return days, hrs, mins, secs
+
+
+def average_delay_hours(dates):
+
+    total_delay_secs = []
+
+    for date in dates:
+        days, hrs, mins, secs = analyse_delay(date)
+
+        #use total seconds from original dates
+        total_delay_secs.append(((days * (3600 *24) + date.seconds)))
+
+    delay = sum([i for i in total_delay_secs]) / len(total_delay_secs) / 3600
+
+    delay_hrs = math.floor(delay)
+
+    #convert fraction to proper mins
+    delay_mins = round((60/100)*((delay - delay_hrs)*100))
+
+    return delay_hrs, delay_mins
+
+
+def report_line(uid, hub_domain, days, hrs, mins, secs):
+
+    print (f"Product {uid} on hub {hub_domain}: publication delay (Days - HH:MM:SS): {str(days).zfill(2)} - {str(hrs).zfill(2)}:{str(mins).zfill(2)}:{str(secs).zfill(2)}")
+
 
 if __name__ == '__main__':
     #http: // srh - services3.ceda.ac.uk / odata / v1 / Products('52199a54-790e-449d-ae20-548d83313ae5')
@@ -69,4 +102,12 @@ if __name__ == '__main__':
     hub_config = sys.argv[1]
     uid = sys.argv[2]
 
-    get_product_details(hub_config, uid)
+    try:
+        hub_domain, publication_delay = get_product_details(hub_config, uid)
+
+        days, hrs, mins, secs = analyse_delay(publication_delay)
+
+        report_line(uid, hub_domain, days, hrs, mins, secs)
+
+    except Exception as ex:
+        print (ex)
