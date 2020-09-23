@@ -8,32 +8,36 @@ grep  'successfully downloaded from' /srh/data/logs/dhus.log | awk '{print $12}'
 
 import os,sys
 from get_product_details import get_product_details,report_line, average_delay_hours, analyse_delay
+import click
 
-hub_config = sys.argv[1]
-list = sys.argv[2]
+@click.command()
+@click.option('-c', '--hub-config', 'hub_config', type=str, required=True, help='Location of hub admin credos')
+@click.option('-l', '--list', 'list', required=True, type=str, help='List of UIDs to submit to hub to extract publication delay info on')
+@click.option('--line', is_flag=True)
+def main(hub_config, list, line):
 
-#do we want to report on delay for each record
-print_report_line_per_uid = False
+    with open(list) as r:
+        uids = [i.rstrip() for i in r.readlines()]
 
-with open(list) as r:
-    uids = [i.rstrip() for i in r.readlines()]
+    delays = []
 
-delays = []
+    for uid in uids:
 
-for uid in uids:
+        try:
+            hub_domain, publication_delay = get_product_details(hub_config, uid)
 
-    try:
-        hub_domain, publication_delay = get_product_details(hub_config, uid)
+            delays.append(publication_delay)
 
-        delays.append(publication_delay)
+            if line:
+                days, hrs, mins, secs = analyse_delay(publication_delay)
+                report_line(uid, hub_domain, days, hrs, mins, secs)
 
-        if print_report_line_per_uid:
-            days, hrs, mins, secs = analyse_delay(publication_delay)
-            report_line(uid, hub_domain, days, hrs, mins, secs)
+        except Exception as ex:
+            print (ex)
 
-    except Exception as ex:
-        print (ex)
+    avg_hrs, avg_mins = average_delay_hours(delays)
 
-avg_hrs, avg_mins = average_delay_hours(delays)
+    print (f"Average publication delay: {avg_hrs} hrs {avg_mins} mins for {len(uids)} records from {hub_domain}")
 
-print (f"Average publication delay: {avg_hrs} hrs {avg_mins} mins for {len(uids)} records from {hub_domain}")
+if __name__ == '__main__':
+    main()
