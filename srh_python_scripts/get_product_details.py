@@ -43,7 +43,8 @@ def get_product_details(hub_config, uid):
             ingestion_date = datetime.strptime(root.find(IN_DATE_XP).text, '%Y-%m-%dT%H:%M:%S.%f')
 
             # whats the difference - timedelta object
-            publication_delay = ingestion_date - creation_date
+            #publication_delay = ingestion_date - creation_date
+            publication_delay = creation_date - ingestion_date
 
             return hub_domain, publication_delay
 

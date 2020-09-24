@@ -10,6 +10,7 @@ import os,sys
 from get_product_details import get_product_details,report_line, average_delay_hours, analyse_delay
 import click
 
+#see https://click.palletsprojects.com/en/7.x/options/  !!
 @click.command()
 @click.option('-c', '--hub-config', 'hub_config', type=str, required=True, help='Location of hub admin credos')
 @click.option('-l', '--list', 'list', required=True, type=str, help='List of UIDs to submit to hub to extract publication delay info on')
