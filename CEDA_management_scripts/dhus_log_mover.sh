@@ -26,5 +26,20 @@ do
 
 	#mv $logfilename $opdirname
 	cp $logfilename $opdirname
+	mvd_logfilename="$logdir/$(basename $logfilename)"
+
+	if [ -f $mvd_logfilename ]; then
+
+		#check moved file is the same before clearing the original
+		a=`md5sum $logfilename | awk '{print $1}'`
+		b=`md5sum $mvd_logfilename | awk '{print $1}'`
+
+		if [ $a == $b ]
+		then
+        		rm -f $logfilename	
+		else
+        		echo "ERROR: Could not remove ${logfilename} as problem with transfer!"
+		fi
+	fi
 
 done
