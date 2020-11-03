@@ -91,10 +91,12 @@ def average_delay_hours(dates):
 
     return delay_hrs, delay_mins
 
+def daily_report(days, hrs, mins, secs):
+    return (f"{str(days).zfill(2)} (days), {str(hrs).zfill(2)}:{str(mins).zfill(2)}:{str(secs).zfill(2)} (HH:MM:SS)")
 
 def report_line(uid, hub_domain, days, hrs, mins, secs):
-
-    print (f"Product {uid} on hub {hub_domain}: publication delay (Days - HH:MM:SS): {str(days).zfill(2)} - {str(hrs).zfill(2)}:{str(mins).zfill(2)}:{str(secs).zfill(2)}")
+    delay_str = daily_report(days, hrs, mins, secs)
+    print (f"Product {uid} on hub {hub_domain}: publication delay: {delay_str}")
 
 
 if __name__ == '__main__':
