@@ -25,8 +25,9 @@ def delay_warning(days, hrs, mins, secs):
 
 @click.command()
 @click.option('-c', '--hub-config', 'hub_config', type=str, required=True, help='Location of hub admin credos')
-@click.option('-e', '--list', 'email', type=str, help='List of UIDs to submit to hub to extract publication delay info on')
+@click.option('-e', '--email', 'email', type=str, help='if supplied will email report ONLY if thresholds exceeded and not output to STDOUT')
 def main(hub_config, email):
+
     try:
         #Synchronizers
         synchronisers = synchroniser_summary(get_synchronisers(hub_config))
@@ -73,16 +74,16 @@ def main(hub_config, email):
 
     report += f"\nFound {len(synchronisers.keys())} synchronisers for hub {hub_config} at {datetime.datetime.now()}"
 
-    print (report)
-
     #send email if requested
     if email and warning_msg:
         try:
+            '''
             from email.mime.text import MIMEText
             msg = MIMEText(report)
             msg['Subject'] = 'Relay Hub Publication delay Synchroniser ALERT!"'
             msg['From'] = email
             msg['To'] = email
+            '''
 
             s = smtplib.SMTP('localhost')
             s.sendmail(email, email, report)
@@ -90,6 +91,9 @@ def main(hub_config, email):
 
         except Exception as ex:
             print (f"\nERROR: Could not send email: {ex}")
+
+    else:
+        print(report)
 
 
 if __name__ == '__main__':
