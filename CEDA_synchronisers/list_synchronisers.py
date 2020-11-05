@@ -85,7 +85,7 @@ def main(hub_config, email):
             msg['To'] = email
 
             s = smtplib.SMTP('localhost')
-            s.sendmail((email, email, msg))
+            s.sendmail(email, email, report)
             s.quit()
 
         except Exception as ex:
