@@ -77,16 +77,14 @@ def main(hub_config, email):
     #send email if requested
     if email and warning_msg:
         try:
-            '''
             from email.mime.text import MIMEText
             msg = MIMEText(report)
             msg['Subject'] = 'Relay Hub Publication delay Synchroniser ALERT!"'
             msg['From'] = email
             msg['To'] = email
-            '''
 
             s = smtplib.SMTP('localhost')
-            s.sendmail(email, email, report)
+            s.sendmail(msg['From'], msg['To'], msg.as_string())
             s.quit()
 
         except Exception as ex:
