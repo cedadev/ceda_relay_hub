@@ -76,7 +76,7 @@ def main(hub_config, email):
     print (report)
 
     #send email if requested
-    if email:
+    if email and warning_msg:
         try:
             from email.mime.text import MIMEText
             msg = MIMEText(report)
