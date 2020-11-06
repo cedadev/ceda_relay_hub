@@ -1,6 +1,8 @@
 Usage:
 
-    To create a synchroniser from a template:
+    NOTE: Python3 must be used.
+
+    To CREATE a synchroniser from a template:
     
     create_synchroniser.py  <sync params file> <creds for hub the synchroniser will run ON> <creds for hub synchroninising FROM>  <last creation date.\
           Use 'None' and will set to 00:00:00 of todays date.  Note format YYYY-MM-DDTHH:MM:SS> <bounding box config.  Use 'None' for no bboxes>")
@@ -21,7 +23,10 @@ Usage:
                                 \ C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\colhub2.cfg
                                 \ 2020-12-25T12:23:23
                                 \ srh_python_scripts/synchronizer_templates/bboxes/UK_BBox.cfg
-        
+
+
+    To DELETE a sychroniser:
+
     delete_synchroniser.py <hub params file> <synchroniser ID number or 'All' to remove all. 'None' if using name> <string to match to remove. 'None' if using number> 
     
         -Note that hub creds files must be a hub config (not in vcs) with hub credentials for source hub.  Must include hub odata url with synchronisers element
@@ -31,6 +36,11 @@ Usage:
         i.e. python delete_synchroniser.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg  81 None
         i.e. python delete_synchroniser.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg  None iw_grdh
         
+
+    To START or STOP existing synchronisers:
+
+    Use this to start or stop synchronisers - you can do this for all or a sub selection based on an id or substring from the synchroniser name
+
     start_stop_synchronisers.py <hub params file> <start or stop> <synchronoser id or 'None' for all> <string to match to remove. 'None' if using number>"
     
         -Note that hub creds files must be a hub config (not in vcs) with hub credentials for source hub.  Must include hub odata url with synchronisers element
@@ -42,7 +52,13 @@ Usage:
         i.e. python start_stop_synchronisers.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg start 81 None
         i.e. python start_stop_synchronisers.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg start None iw_grdh
         
-    list_synchronisers.py <hub params file>
+
+    To MONITOR or REPORT on existing synchronisers.
+
+    Use these to see current operation of synchronisers and whether the last creation date (LCD) is exceeding the preset warnings.  This can also be run on crontab and if email supplied will alert if thresholds breached
+
+    list_synchronisers.py -c <hub params file> (-e <email)
         -Note that hub creds files must be a hub config (not in vcs) with hub credentials for source hub.  Must include hub odata url with synchronisers element
         
-        i.e. python list_synchronisers.py C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg
+        i.e. python list_synchronisers.py -c C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg
+        i.e. python list_synchronisers.py -c C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg -e postmanpat@greendale.post.office

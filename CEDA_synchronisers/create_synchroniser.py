@@ -19,7 +19,12 @@ def create_synchroniser(sync_template, params, src_hub, geofilter=None, label_ta
     '''
 
     if not label_tag:
-        loc = 'GLOB'
+        #tidy up sync name
+        if 'GLOB' not in os.path.basename(params_file):
+            loc = 'GLOB'
+
+        else:
+            loc = ''
 
     else:
         loc = label_tag
@@ -30,7 +35,8 @@ def create_synchroniser(sync_template, params, src_hub, geofilter=None, label_ta
         sync_template = sync_template.replace(hook, value)
 
     # label
-    label_base = (f"{os.path.basename(params_file)}_{loc}_")
+    hub_label = src_hub.replace('https://','').replace('http://','').split('.')[0]
+    label_base = (f"{os.path.basename(params_file)}_{loc}_{hub_label}_")
     label = (f"{label_base}_{datetime.datetime.now().strftime('%d%m%YT%H%M%S')}")
     sync_template = sync_template.replace('D_LABEL', label)
 
