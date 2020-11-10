@@ -9,6 +9,7 @@ ID_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}Id'
 LABEL_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}Label'
 STATUS_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}Status'
 LASTCREATIONDATE_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}LastCreationDate'
+SERVICEURL_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}ServiceUrl'
 
 ENTRY_XP = '{http://www.w3.org/2005/Atom}entry'
 PROPERTIES_XP = '{http://www.w3.org/2005/Atom}entry/{http://www.w3.org/2005/Atom}content/{http://schemas.microsoft.com/ado/2007/08/dataservices/metadata}properties'
@@ -165,8 +166,9 @@ def synchroniser_summary(tree):
         label = sync.find(LABEL_XP).text
         status = sync.find(STATUS_XP).text
         last_creation_date = sync.find(LASTCREATIONDATE_XP).text
+        service_url = sync.find(SERVICEURL_XP).text
 
-        synchronisers[label] = {'id': id, 'status': status, 'lcd': last_creation_date}
+        synchronisers[label] = {'id': id, 'status': status, 'lcd': last_creation_date, 'url': service_url}
 
     return synchronisers
 

@@ -62,11 +62,14 @@ def main(hub_config, email):
                 #pretty print the delay
                 delay_str = daily_report(days, hrs, mins, secs)
 
+                #whats the source hub
+                src_hub = synchronisers[sync]['url'].replace('https://','').replace('http://','').split('.')[0]
+
                 if warning_msg:
-                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd}) {warning_msg}"
+                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, source = {src_hub}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd}) {warning_msg}"
 
                 else:
-                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd})"
+                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, source = {src_hub}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd})"
 
                 report +="\n"
 
