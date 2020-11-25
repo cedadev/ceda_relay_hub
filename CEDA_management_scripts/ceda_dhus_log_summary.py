@@ -8,6 +8,9 @@ from datetime import datetime
 from copy import deepcopy
 from optparse import OptionParser, OptionGroup
 
+class Line_Error(Exception):
+    pass
+
 class Sentinel_Product(object):
     '''
     Class dedicated to definition of Sentinel products and operations on Sentinel product names
@@ -949,6 +952,9 @@ def synchronizer_report(logfiles, write_products = None):
             raise Exception( "ERROR: Unable to open logfile: %s (%s)" %(logfilename, ex))
 
         #now run the filtered log file and extract details as required
+        bad_line_count = 0
+        line_count = 0
+        errors = {}
         for line in filtered_log:
 
             #successful synchronisers..
@@ -960,7 +966,16 @@ def synchronizer_report(logfiles, write_products = None):
                     successful_sync.append(deepcopy(extracted_details))
 
             except Exception as ex:
-                raise Exception( "ERROR: Unable to summarise synchroniser activity from log: %s (%s)" %(logfilename, ex))
+                bad_line_count +=1
+                errors[line_count] = ex.message
+                #raise Exception( "ERROR: Unable to summarise synchroniser activity from log line %s: %s (%s)" %(line_count-1,logfilename, ex))
+
+            line_count += 1
+
+        if bad_line_count > 0:
+            print "WARNING!  Found %s bad lines in log %s.  Possible Java system errors in log.  Please investigate!" %(bad_line_count, logfilename)
+            for error in errors.keys():
+                print "Line %s: %s" %(error, errors[error])
 
     #report on values
     try:
