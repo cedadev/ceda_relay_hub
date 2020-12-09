@@ -14,13 +14,15 @@ stringtogrep=$2
 year=`head -1 $log | awk '{print $1}' | sed 's/\]\[/\t/g' | awk '{print $2}' | tr '-' '\t' | awk '{print $1}'`
 month=`head -1 $log | awk '{print $1}' | sed 's/\]\[/\t/g' | awk '{print $2}' | tr '-' '\t' | awk '{print $2}'`
 day=`head -1 $log | awk '{print $1}' | sed 's/\]\[/\t/g' | awk '{print $2}' | tr '-' '\t' | awk '{print $3}'`
+dhus_ver=`head -1 /srh/data/logs/dhus.log | awk '{print $1}' | sed 's/\]\[/\t/g' | sed 's/^\[//g' | awk '{print $1}'`
 	
 total=0
 
 for i in {00..23};
 do 
 
-	number=`grep "\[0\.13\.4\-22\]\[${year}\-${month}\-${day} ${i}\:" $log | grep -c "${stringtogrep}"`
+	number=`grep -A 5 "\[${dhus_ver}\]\[${year}\-${month}\-${day} ${i}\:" $log | grep -c "${stringtogrep}"`
+	#number=`grep -A 5 "\[0\.13\.4\-22\]\[${year}\-${month}\-${day} ${i}\:" $log | grep -c "${stringtogrep}"`
 
 	echo "Hour ${i}: ${number}"
 
