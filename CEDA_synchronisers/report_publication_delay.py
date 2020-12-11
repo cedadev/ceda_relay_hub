@@ -14,30 +14,36 @@ import click
 @click.command()
 @click.option('-c', '--hub-config', 'hub_config', type=str, required=True, help='Location of hub admin credos')
 @click.option('-l', '--list', 'list', required=True, type=str, help='List of UIDs to submit to hub to extract publication delay info on')
-@click.option('--line', is_flag=True)
+@click.option('--line', is_flag=True, help="Will print out in ASCENDING ingestion time order the list of uid's and associated publication delay")
 def main(hub_config, list, line):
 
     with open(list) as r:
         uids = [i.rstrip() for i in r.readlines()]
 
-    delays = []
+    delays = {}
 
     for uid in uids:
 
         try:
-            hub_domain, publication_delay = get_product_details(hub_config, uid)
+            hub_domain, publication_delay, ingestion_date = get_product_details(hub_config, uid)
 
-            delays.append(publication_delay)
-
-            if line:
-                days, hrs, mins, secs = analyse_delay(publication_delay)
-                report_line(uid, hub_domain, days, hrs, mins, secs)
+            delays[ingestion_date] = (publication_delay, uid)
 
         except Exception as ex:
             print (ex)
 
+    if line:
+
+        #sort on time
+        for sorted_dt in sorted(delays, key=delays.get, reverse=False):
+
+            publication_delay, uid = delays[sorted_dt]
+
+            days, hrs, mins, secs = analyse_delay(publication_delay)
+            report_line(uid, hub_domain, days, hrs, mins, secs)
+
     if len(delays) != 0:
-        avg_hrs, avg_mins = average_delay_hours(delays)
+        avg_hrs, avg_mins = average_delay_hours([delays[i][0] for i in delays.keys()])
 
         print (f"Average publication delay: {avg_hrs} hrs {avg_mins} mins for {len(uids)} records from {hub_domain}")
 

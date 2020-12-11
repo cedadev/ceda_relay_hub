@@ -15,7 +15,10 @@ SYNC_STATUS = ['RUNNING', 'PENDING', 'STOPPED'] #in order we want them appearing
 def delay_warning(days, hrs, mins, secs):
     #Method to calculate what warning sent depending on values defined
     warning = None
-    if days > 1 or hrs > PUB_DELAY:
+    if days >= 1:
+        warning = f"[WARNING! Publication delay {PUB_DELAY} hrs EXCEEDED!]"
+
+    elif days < 1 and hrs > PUB_DELAY:
         warning = f"[WARNING! Publication delay {PUB_DELAY} hrs EXCEEDED!]"
 
     elif hrs < PUB_DELAY and hrs > WARN_DELAY:

@@ -2,15 +2,12 @@
 import os, sys
 import requests
 from requests.auth import HTTPBasicAuth
+import click
 
 from synchroniser import *
 
-def usage():
-    usage = f"Usage {os.path.basename(sys.argv[0])} <hub params file> <synchroniser ID number or 'All' to remove all. 'None' if using name> <string to match to remove. 'None' if using number> "
-    sys.exit()
-
 def parse_the_args(hub_creds, syncs, name):
-
+    '''Need this as several different modes'''
     try:
         existing_synchronisers = synchroniser_summary(get_synchronisers(hub_creds))
         sync_ids = [i['id'] for i in existing_synchronisers.values()]
@@ -21,7 +18,8 @@ def parse_the_args(hub_creds, syncs, name):
 
     # crappy way to do it but I'm outa time for fancy pancy arg parsing and logic.
     if syncs == 'None' and name == 'None':
-        usage()
+        print ("Please supply either a synchroniser id (-i) or specify all")
+        sys.exit()
 
     elif syncs in ['All', 'all', 'ALL'] and name in ['None', 'none', None]:
         #All synchronisers and no name match
@@ -49,19 +47,21 @@ def parse_the_args(hub_creds, syncs, name):
         sync_ids = [syncs]
 
     else:
-        usage()
-
-
-
-if __name__ == '__main__':
-
-    if len(sys.argv) != 4:
-        print (usage)
+        print("Please supply proper args - please use -h option")
         sys.exit()
 
+
+@click.command()
+@click.option('-c', '--hub-config', 'hub_creds', type=str, required=True, help='Location of hub admin credos')
+@click.option('-i', '--id', 'syncs', type=str, help='ID integer of specific synchroniser on target hub.  "ALL" will delete all')
+@click.option('-n', '--name', 'name', type=str, help='Name or substring of name of synchroniser for mass targeted operarations.  i.e. S1A_SLC')
+def main(hub_creds, syncs, name):
+
+    '''
     hub_creds = sys.argv[1]
     syncs = sys.argv[2]
     name = sys.argv[3]
+    '''
 
     sync_ids = parse_the_args(hub_creds, syncs, name)
 
@@ -78,3 +78,7 @@ if __name__ == '__main__':
 
         else:
             print(f"ERROR: cannot delete synchroniser {id} for hub creds {hub_creds} (error code {response.status_code})")
+
+
+if __name__ == '__main__':
+    main()
