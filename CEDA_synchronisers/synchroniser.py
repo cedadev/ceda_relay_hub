@@ -9,6 +9,7 @@ ID_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}Id'
 LABEL_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}Label'
 STATUS_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}Status'
 LASTCREATIONDATE_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}LastCreationDate'
+SERVICEURL_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}ServiceUrl'
 
 ENTRY_XP = '{http://www.w3.org/2005/Atom}entry'
 PROPERTIES_XP = '{http://www.w3.org/2005/Atom}entry/{http://www.w3.org/2005/Atom}content/{http://schemas.microsoft.com/ado/2007/08/dataservices/metadata}properties'
@@ -46,11 +47,9 @@ def get_hub_creds(filename):
     else:
         raise Exception("No such file: %s" % filename)
 
-def get_sync_template(geo=False):
+def get_sync_template(geo = False, remote_incoming = False):
 
-    if not geo:
-        # template based on typical ceda sycnhronizer
-        return '''<entry xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices"
+    base_template = '''<entry xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices"
             xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
             xmlns="http://www.w3.org/2005/Atom">
            <id>http://localhost:8080/odata/v1/Synchronizers(0L)</id>
@@ -68,35 +67,26 @@ def get_sync_template(geo=False):
                  <d:PageSize>D_PAGESIZE</d:PageSize>
                  <d:LastCreationDate>D_LASTCREATIONDATE</d:LastCreationDate>
                  <d:CopyProduct>D_COPYPRODUCT</d:CopyProduct>
-                 <d:FilterParam>D_FILTERPARAM</d:FilterParam>
+                 <d:FilterParam>D_FILTERPARAM</d:FilterParam>                
+                 D_REMOTEINCOMING
+                 D_GEOFILTER
               </m:properties>
            </content>
         </entry>'''
+
+    if remote_incoming:
+        base_template = base_template.replace('D_REMOTEINCOMING','<d:RemoteIncoming>D_REMOTEINCOMING</d:RemoteIncoming>')
 
     else:
-        return '''<entry xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices"
-            xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
-            xmlns="http://www.w3.org/2005/Atom">
-           <id>http://localhost:8080/odata/v1/Synchronizers(0L)</id>
-           <title type="text">Synchronizer</title>
-           <updated>2015-06-29T09:32:15.922Z</updated>
-           <category term="DHuS.Synchronizer" scheme="http://schemas.microsoft.com/ado/2007/08/dataservices/scheme"/>
-           <content type="application/xml">
-              <m:properties>
-                 <d:Schedule>D_SCHEDULE</d:Schedule>
-                 <d:Request>D_REQUEST</d:Request>
-                 <d:ServiceUrl>D_SERVICEURL</d:ServiceUrl>
-                 <d:Label>D_LABEL</d:Label>
-                 <d:ServiceLogin>D_SERVICELOGIN</d:ServiceLogin>
-                 <d:ServicePassword>D_SERVICEPASSWORD</d:ServicePassword>
-                 <d:PageSize>D_PAGESIZE</d:PageSize>
-                 <d:LastCreationDate>D_LASTCREATIONDATE</d:LastCreationDate>
-                 <d:CopyProduct>D_COPYPRODUCT</d:CopyProduct>
-                 <d:FilterParam>D_FILTERPARAM</d:FilterParam>
-                <d:GeoFilter>D_GEOFILTER</d:GeoFilter>
-              </m:properties>
-           </content>
-        </entry>'''
+        base_template= base_template.replace('D_REMOTEINCOMING', '')
+
+    if geo:
+        base_template= base_template.replace('D_GEOFILTER', '<d:GeoFilter>D_GEOFILTER</d:GeoFilter>')
+
+    else:
+        base_template= base_template.replace('D_GEOFILTER', '')
+
+    return base_template
 
 def POST_to_hub(hub, hub_uname, hub_password, data, PUT = False, synchroniser_id = None ):
 
@@ -111,10 +101,10 @@ def POST_to_hub(hub, hub_uname, hub_password, data, PUT = False, synchroniser_id
     try:
 
         if not PUT:
-            response = requests.post(hub, data = data, headers = header, auth = HTTPBasicAuth(hub_uname, hub_password))
+            response = requests.post(hub, data = data, headers = header, auth = HTTPBasicAuth(hub_uname, hub_password), verify=False)
 
         else:
-            response = requests.put(hub, data=data, headers=header, auth=HTTPBasicAuth(hub_uname, hub_password))
+            response = requests.put(hub, data=data, headers=header, auth=HTTPBasicAuth(hub_uname, hub_password),verify=False)
 
         if response.status_code not in acceptable_dhus_return_codes:
             raise Exception(f"Incorrect response recieved (status: {response.status_code}; message: {response.content}")
@@ -135,7 +125,7 @@ def GET_from_hub(hub_config, odata_stub=None):
     if odata_stub:
         hub = f"{hub}/{odata_stub}"
 
-    return requests.get(hub, auth=HTTPBasicAuth(hub_uname, hub_password))
+    return requests.get(hub, auth=HTTPBasicAuth(hub_uname, hub_password), verify=False)
 
 def PUT_to_hub_DEP(hub_config, template):
 
@@ -165,8 +155,9 @@ def synchroniser_summary(tree):
         label = sync.find(LABEL_XP).text
         status = sync.find(STATUS_XP).text
         last_creation_date = sync.find(LASTCREATIONDATE_XP).text
+        service_url = sync.find(SERVICEURL_XP).text
 
-        synchronisers[label] = {'id': id, 'status': status, 'lcd': last_creation_date}
+        synchronisers[label] = {'id': id, 'status': status, 'lcd': last_creation_date, 'url': service_url}
 
     return synchronisers
 

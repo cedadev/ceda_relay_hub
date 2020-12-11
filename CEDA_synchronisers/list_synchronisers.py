@@ -15,7 +15,10 @@ SYNC_STATUS = ['RUNNING', 'PENDING', 'STOPPED'] #in order we want them appearing
 def delay_warning(days, hrs, mins, secs):
     #Method to calculate what warning sent depending on values defined
     warning = None
-    if days > 1 or hrs > PUB_DELAY:
+    if days >= 1:
+        warning = f"[WARNING! Publication delay {PUB_DELAY} hrs EXCEEDED!]"
+
+    elif days < 1 and hrs > PUB_DELAY:
         warning = f"[WARNING! Publication delay {PUB_DELAY} hrs EXCEEDED!]"
 
     elif hrs < PUB_DELAY and hrs > WARN_DELAY:
@@ -62,11 +65,14 @@ def main(hub_config, email):
                 #pretty print the delay
                 delay_str = daily_report(days, hrs, mins, secs)
 
+                #whats the source hub
+                src_hub = synchronisers[sync]['url'].replace('https://','').replace('http://','').split('.')[0]
+
                 if warning_msg:
-                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd}) {warning_msg}"
+                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, source = {src_hub}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd}) {warning_msg}"
 
                 else:
-                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd})"
+                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, source = {src_hub}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd})"
 
                 report +="\n"
 

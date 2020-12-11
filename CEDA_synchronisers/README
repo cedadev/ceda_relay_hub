@@ -57,8 +57,18 @@ Usage:
 
     Use these to see current operation of synchronisers and whether the last creation date (LCD) is exceeding the preset warnings.  This can also be run on crontab and if email supplied will alert if thresholds breached
 
+    Monitor synchronisers:
+
     list_synchronisers.py -c <hub params file> (-e <email)
         -Note that hub creds files must be a hub config (not in vcs) with hub credentials for source hub.  Must include hub odata url with synchronisers element
         
         i.e. python list_synchronisers.py -c C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg
         i.e. python list_synchronisers.py -c C:\workspace\ceda_SRH_scripts\srh_python_scripts\configs\srh-services3.cfg -e postmanpat@greendale.post.office
+
+    Report on publication delay:
+
+    report_publication_delay.py -c <hub params file> -l <uid list> NOTE: the UID list must have been obtained by identifying products already existing on the hub,
+
+    This shell script wraps report_publication_delay.py by finding products within a hub LOG file and grouping by likely Sentinel product
+
+    average_publication_delay.sh <log file> <hub config>

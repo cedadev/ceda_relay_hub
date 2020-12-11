@@ -46,7 +46,7 @@ def get_product_details(hub_config, uid):
             #publication_delay = ingestion_date - creation_date
             publication_delay = creation_date - ingestion_date
 
-            return hub_domain, publication_delay
+            return hub_domain, publication_delay, ingestion_date
 
         else:
             raise Exception(f"Hub return code: {content.status_code}")
