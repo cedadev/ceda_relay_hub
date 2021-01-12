@@ -1,101 +1,20 @@
 from operator import eq
 
 __author__ = 'sjdd53'
-
 import sys, os
+
+sys.path.append("..")
 
 from datetime import datetime
 from copy import deepcopy
 from optparse import OptionParser, OptionGroup
 
-class Sentinel_Product(object):
-    '''
-    Class dedicated to definition of Sentinel products and operations on Sentinel product names
-    '''
+from analyse_logs.Sentinel import Sentinel_Product
 
-    MISSIONS = ['S1A', 'S1B', 'S2A', 'S2B', 'S3A', 'S3B']
+#from extract_detail_info import get_successful_downloads
 
-    #sensing date string indices by mission
-    #updated - dict as value indicates where different naming structures used for same mission.  Thats you S2A.. (PIA).
-    SENSING_DATE_PARAMS = {'S1A':'17:32', 'S1B':'17:32', 'S2A':{'S2A_OPER_PRD_MSIL1C':'25:40', 'S2A_MSIL1C':'11:26','S2A_MSIL2A':'11:26'},\
-                           'S2B':{'S2B_OPER_PRD_MSIL1C':'25:40', 'S2B_MSIL1C':'11:26','S2B_MSIL2A':'11:26'}, 'S3A':'16:30', 'S3B':'16:30'}
-
-    #product type string indices by mission.  Follow convention used for SENSING_DATA_PARAMS
-    #S1 See https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/naming-conventions
-    #S2 See
-    #S3 See
-    #PRODUCT_NAME_PARAMS = {'S1A':'0:11', 'S1B':'0:11', 'S2A':'0:19'}
-    PRODUCT_NAME_PARAMS = {'S1A':'0:11', 'S1B':'0:11', 'S2A':{'S2A_OPER_PRD_MSIL1C':'0:19', 'S2A_MSIL1C':'0:10', 'S2A_MSIL2A':'0:10'}, \
-                           'S2B':{'S2B_OPER_PRD_MSIL1C':'0:19', 'S2B_MSIL1C':'0:10', 'S2B_MSIL2A':'0:10'}, 'S3A':'0:11', 'S3B':'0:11'}
-
-
-    def get_product_date(self):
-        '''
-        Method to work out the product sensing date based on filename
-        :return:product date (datetime object)
-        '''
-
-        #if legal get the date range values from the product name
-        if type(self.SENSING_DATE_PARAMS[self.mission]) is dict:
-            for sub_type in self.PRODUCT_NAME_PARAMS[self.mission].keys():
-                if sub_type in self.product_name:
-                    daterangeindex = self.SENSING_DATE_PARAMS[self.mission][sub_type].split(":")
-        else:
-            daterangeindex = self.SENSING_DATE_PARAMS[self.mission].split(":")
-
-        try:
-            product_datestamp = self.product_name[int(daterangeindex[0]):int(daterangeindex[1])]
-
-        except Exception as ex:
-            raise Exception ("ERROR: Unable to extract daterange for %s (%s)" %(self.product_name,ex))
-
-        #convert to datetime format
-        try:
-            #"%Y-%m-%dT%H:%M:%S
-            return datetime.strptime(product_datestamp, "%Y%m%dT%H%M%S")
-
-        except Exception as ex:
-            raise Exception ("ERROR: Unable to convert '%s' to datetime (%s)" %(self.product_name,ex))
-
-
-    def __init__(self,product_name):
-        '''
-        Initialise class by returning a product type - needed for use elsewhere
-
-        :param product_name:
-        :return:
-        '''
-
-        self.product_name = product_name
-        self.mission = None
-        self.product_type = None
-
-        #what mission are we in?
-        try:
-            if self.product_name[0:3] in self.MISSIONS:
-                self.mission = self.product_name[0:3]
-            else:
-                raise Exception("Mission not supported: %s" %self.product_name[0:4])
-
-            #work out product type
-            if type(self.PRODUCT_NAME_PARAMS[self.mission]) is dict:
-
-                for sub_type in self.PRODUCT_NAME_PARAMS[self.mission].keys():
-                    if sub_type in self.product_name:
-                        self.product_type = \
-                            self.product_name[int(self.PRODUCT_NAME_PARAMS[self.mission][sub_type].split(':')[0]):int(self.PRODUCT_NAME_PARAMS[self.mission][sub_type].split(':')[1])]
-            else:
-                self.product_type = self.product_name[int(self.PRODUCT_NAME_PARAMS[self.mission].split(':')[0]):int(self.PRODUCT_NAME_PARAMS[self.mission].split(':')[1])]
-
-            if self.product_type[-1] == '_':
-                self.product_type = self.product_type[:-1]
-
-            if self.product_type is None:
-                raise Exception ("Could not assign product type (%s)" %ex)
-
-        except Exception as ex:
-            raise Exception("Error: %s" %ex)
-
+class Line_Error(Exception):
+    pass
 
 SYNC_ENTRY_LINE_TEMPLATE = {'entry_time':None, 'log_level':None, 'synchronizer_id':None, 'product':None, 'size':None, 'status':None, \
                             'source':None, 'product_type':None, 'product_sens_time':None, 'transfer_rate':None}
@@ -146,12 +65,12 @@ def check_options(options):
     :return:
     '''
     if options.logfilename is None and options.logfiledir is None:
-        print "\nError: Please supply either an explicit logfile (-l option) or the directory where logfiles are to be found (-d option)"
+        print ("\nError: Please supply either an explicit logfile (-l option) or the directory where logfiles are to be found (-d option)")
         parser.print_help()
         sys.exit()
 
     if options.logfiledir is not None and options.extension is None:
-        print "\nError: If using a directory with logfiles please supply the extension (-x option)"
+        print ("\nError: If using a directory with logfiles please supply the extension (-x option)")
         parser.print_help()
         sys.exit()
 
@@ -331,7 +250,7 @@ def extract_synchronizer_details(line, start_date= None, end_date=None ):
             raise Exception ("ERROR: New product found (%s).  Please add type to SENTINEL_SENTINEL_PRODUCTS!!" %entry['product'])
         '''
     #else:
-        #Another synchroniser line ie Synchroniser "done message".  Can ignore these for this CEDA_management_scripts purposes
+        #Another synchroniser line ie Synchroniser "done message".  Can ignore these for this scripts purposes
         #entry = None
 
     return entry
@@ -395,7 +314,7 @@ def logfile(logfilename):
         logfileob = open(logfilename,'r')
 
     except Exception as ex:
-        print "ERROR: Could not open file %s" %ex
+        print ("ERROR: Could not open file %s" %ex)
         sys.exit()
 
     try:
@@ -890,7 +809,7 @@ def summarise_downloads_per_product_per_sync(per_sync,per_sync_fail):
         for product in per_sync[sync].keys():
             good_num = per_sync[sync][product]['num']
 
-            if per_sync_fail[sync].has_key(product):
+            if product in per_sync_fail[sync]:
                 bad_num = per_sync_fail[sync][product]['num']
 
             else:
@@ -949,6 +868,9 @@ def synchronizer_report(logfiles, write_products = None):
             raise Exception( "ERROR: Unable to open logfile: %s (%s)" %(logfilename, ex))
 
         #now run the filtered log file and extract details as required
+        bad_line_count = 0
+        line_count = 0
+        errors = {}
         for line in filtered_log:
 
             #successful synchronisers..
@@ -960,7 +882,16 @@ def synchronizer_report(logfiles, write_products = None):
                     successful_sync.append(deepcopy(extracted_details))
 
             except Exception as ex:
-                raise Exception( "ERROR: Unable to summarise synchroniser activity from log: %s (%s)" %(logfilename, ex))
+                bad_line_count +=1
+                errors[line_count] = ex.message
+                #raise Exception( "ERROR: Unable to summarise synchroniser activity from log line %s: %s (%s)" %(line_count-1,logfilename, ex))
+
+            line_count += 1
+
+        if bad_line_count > 0:
+            print ("WARNING!  Found %s bad lines in log %s.  Possible Java system errors in log.  Please investigate!" %(bad_line_count, logfilename))
+            for error in errors.keys():
+                print ("Line %s: %s" %(error, errors[error]))
 
     #report on values
     try:
@@ -968,7 +899,7 @@ def synchronizer_report(logfiles, write_products = None):
         fail = filter_resultset(successful_sync,'status',False)
 
     except Exception as ex:
-        print "ERROR: problem: %s "%ex
+        print ("ERROR: problem: %s "%ex)
 
     #identify unique synchronizers
     try:
@@ -1194,7 +1125,7 @@ if __name__ == '__main__':
 
     #any log files?
     if len(logs) == 0:
-        print "Cannot generate report as no log files!"
+        print ("Cannot generate report as no log files!")
         sys.exit()
 
     #do we need to create an output list of all products synchronised (useful for checking)
@@ -1224,7 +1155,7 @@ if __name__ == '__main__':
 
        final_report += report
 
-       print final_report
+       print (final_report)
 
        if options.outputfiledir:
 
@@ -1233,16 +1164,16 @@ if __name__ == '__main__':
            reportfilename = os.path.join(options.outputfiledir,"SYNCHRONIZER_report_%s.csv" %datetime.now().strftime("%d_%m_%yT%H%M%S"))
 
            if create_file(reportfilename, csv_report):
-               print "Report created at: %s" %reportfilename
+               print ("Report created at: %s" %reportfilename)
 
 
 
     except IOError as ex:
-        print "IO Error encountered generating reports: %s" %ex
+        print ("IO Error encountered generating reports: %s" %ex)
         sys.exit()
 
     except Exception as ex:
-        print "Failed generating reports: %s" %ex
+        print ("Failed generating reports: %s" %ex)
         sys.exit()
 
 
@@ -1254,13 +1185,13 @@ if __name__ == '__main__':
             formatted_list = ["%s\n" % l for l in products_synchronised]
 
             if create_file(output_product_list, formatted_list):
-                print "List of products successfully synchronised: %s" %output_product_list
+                print ("List of products successfully synchronised: %s" %output_product_list)
 
             else:
-                print "Problem creating %s" %output_product_list
+                print ("Problem creating %s" %output_product_list)
 
         except Exception as ex:
-            print "Problem creating %s (%s)" %(output_product_list, ex)
+            print ("Problem creating %s (%s)" %(output_product_list, ex))
 
     #create an output file listing evicted products
     if evicted_product_list and products_evicted:
@@ -1270,13 +1201,13 @@ if __name__ == '__main__':
             formatted_list = ["%s\n" % l for l in products_evicted]
 
             if create_file(evicted_product_list, formatted_list):
-                print "List of products successfully synchronised: %s" %evicted_product_list
+                print ("List of products successfully synchronised: %s" %evicted_product_list)
 
             else:
-                print "Problem creating %s" %evicted_product_list
+                print ("Problem creating %s" %evicted_product_list)
 
         except Exception as ex:
-            print "Problem creating %s (%s)" %(evicted_product_list, ex)
+            print ("Problem creating %s (%s)" %(evicted_product_list, ex))
 
 
 

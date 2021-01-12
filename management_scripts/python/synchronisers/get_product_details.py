@@ -14,6 +14,24 @@ Run from shell after parsing dhus log file for successfully downloaded files for
 CR_DATE_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices/metadata}properties/{http://schemas.microsoft.com/ado/2007/08/dataservices}CreationDate'
 IN_DATE_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices/metadata}properties/{http://schemas.microsoft.com/ado/2007/08/dataservices}IngestionDate'
 
+class UIDnotOnHubError(Exception):
+    '''
+        see https://gist.github.com/StephenFordham/8ea287187a0fde02a8ee82d5a1f2039f
+        '''
+
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return 'MyCustomError, {0} '.format(self.message)
+        else:
+            return 'MyCustomError has been raised'
+
+
 def get_product_details(hub_config, uid):
     '''
     Method to access Products xml file for a given UID on the hub
@@ -24,35 +42,40 @@ def get_product_details(hub_config, uid):
 
     msg = None
 
-    try:
-        # whats the hub (for reporting purposes)
-        hub, u, pwd = get_hub_creds(hub_config)
 
-        del u;
-        del pwd
+    # whats the hub (for reporting purposes)
+    hub, u, pwd = get_hub_creds(hub_config)
 
-        hub_domain = urlparse(hub).netloc
+    del u;
+    del pwd
 
-        # root = access_xml_file(GET_from_hub(hub_config, odata_stub=stub))
-        content = GET_from_hub(hub_config, odata_stub=stub)
+    hub_domain = urlparse(hub).netloc
 
-        if content.status_code in [200, 201]:
-            root = get_existing_details(content.text)
+    # root = access_xml_file(GET_from_hub(hub_config, odata_stub=stub))
+    content = GET_from_hub(hub_config, odata_stub=stub)
 
-            creation_date = datetime.strptime(root.find(CR_DATE_XP).text, '%Y-%m-%dT%H:%M:%S.%f')
-            ingestion_date = datetime.strptime(root.find(IN_DATE_XP).text, '%Y-%m-%dT%H:%M:%S.%f')
+    if content.status_code in [200, 201]:
+        root = get_existing_details(content.text)
 
-            # whats the difference - timedelta object
-            #publication_delay = ingestion_date - creation_date
-            publication_delay = creation_date - ingestion_date
+        creation_date = datetime.strptime(root.find(CR_DATE_XP).text, '%Y-%m-%dT%H:%M:%S.%f')
+        ingestion_date = datetime.strptime(root.find(IN_DATE_XP).text, '%Y-%m-%dT%H:%M:%S.%f')
 
-            return hub_domain, publication_delay, ingestion_date
+        return hub_domain, creation_date, ingestion_date
 
-        else:
-            raise Exception(f"Hub return code: {content.status_code}")
+    elif content.status_code in [404]:
+        raise UIDnotOnHubError(f"{uid}: Product not found on hub")
 
-    except Exception as ex:
-        raise Exception (f"Cannot extract data on {uid} ({ex})")
+    else:
+        raise Exception(f"Cannot extract data on {uid}. Hub return code: {content.status_code}")
+
+
+def get_delay(creation_date, ingestion_date):
+    # whats the difference - timedelta object
+    # publication_delay = ingestion_date - creation_date
+    publication_delay = creation_date - ingestion_date
+
+    return publication_delay
+
 
 def analyse_delay(publication_delay):
     '''
@@ -94,9 +117,15 @@ def average_delay_hours(dates):
 def daily_report(days, hrs, mins, secs):
     return (f"{str(days).zfill(2)} (days), {str(hrs).zfill(2)}:{str(mins).zfill(2)}:{str(secs).zfill(2)} (HH:MM:SS)")
 
-def report_line(uid, hub_domain, days, hrs, mins, secs):
+def report_line(uid, src_hub_domain, loc_hub_domain, days, hrs, mins, secs, linenum=None):
     delay_str = daily_report(days, hrs, mins, secs)
-    print (f"Product {uid} on hub {hub_domain}: publication delay: {delay_str}")
+    if not linenum:
+        print (
+            f"Product {uid} on SOURCE hub {src_hub_domain}/ LOCAL hub {loc_hub_domain}: publication delay: {delay_str}")
+
+    else:
+        print(
+            f"{linenum} Product {uid} on SOURCE hub {src_hub_domain}/ LOCAL hub {loc_hub_domain}: publication delay: {delay_str}")
 
 
 if __name__ == '__main__':

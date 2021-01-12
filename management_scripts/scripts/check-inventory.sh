@@ -59,9 +59,9 @@ extraList=$workingDir/extra-list_${queryDate}_$$.txt
 trap "if [[ "$keepFiles" == "false" ]]; then rm $colhubList $dhrdeList $missingList $extraList; fi" EXIT
 
 # retreive remote and local inventory
-./colhub-inventory.sh $queryDate | sort -t _ -k 5 > $colhubList
+colhub-inventory.sh $queryDate | sort -t _ -k 5 > $colhubList
 echo "Count in colhub: $(wc -l $colhubList)"
-./crh-inventory.sh $queryDate | sort -t _ -k 5 > $dhrdeList
+crh-inventory.sh $queryDate | sort -t _ -k 5 > $dhrdeList
 echo "Count in crh: $(wc -l $dhrdeList)"
 
 # check local extras
@@ -83,7 +83,7 @@ if [[ $missingCount > 0 ]]; then
 
   if [[ "$reloadMisingFiles" == "true" ]]; then
     echo "Starting to reload missing files..."
-    for f in $(cat $missingList); do ./colhub-get-product.sh $f; done
+    for f in $(cat $missingList); do colhub-get-product.sh $f; done
   fi
 
   if [[ "$keepFiles" == "true" ]]; then

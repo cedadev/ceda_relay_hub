@@ -5,6 +5,9 @@ import configparser
 import xml.etree.ElementTree as ET
 import datetime
 
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 ID_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}Id'
 LABEL_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}Label'
 STATUS_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices}Status'
