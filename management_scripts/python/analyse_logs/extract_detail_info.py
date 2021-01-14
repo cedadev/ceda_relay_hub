@@ -1,6 +1,6 @@
 import sys, re, urllib
 
-sys.path.append("..")
+sys.path.append(".")
 
 import click
 from click import command, option, Option, UsageError
@@ -104,7 +104,12 @@ def analyse_log(lines, phrases):
                 if uid not in successful_syncs[hub]['uids']:
                     successful_syncs[hub]['uids'][uid] = product_name
 
+                '''
+                #aids debugging large volumes of uids...
                 cnt += 1
+                if cnt == 10:
+                    return successful_syncs, bad_cnt
+                '''
 
             except Exception as ex:
                 # todo something wrong with the log parsing etc.  deal with it later

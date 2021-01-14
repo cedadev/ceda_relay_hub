@@ -25,6 +25,8 @@ from synchronisers.synchroniser import get_hub_creds
 
 #SOURCE_SAMPLE_LIMIT = 10 #for the moment sample size to take from the uids retrieved.  If we do all, could swamp the local and remote hubs
 
+#todo: why do some records get missed out - even on a sample of 20?
+
 #see https://gist.github.com/stanchan/bce1c2d030c76fe9223b5ff6ad0f03db - for mutually exclusive options
 class MutuallyExclusiveOption(Option):
     def __init__(self, *args, **kwargs):
@@ -79,20 +81,28 @@ def build_config_map(source_hub_config_dir, successful_syncs):
     return config_map
 
 
-def choose_random_uid(previous_selections, sample_size):
+def choose_random_uid(all_available_ids, sample_size):
     '''
-    Method to aid choosing of sample uids from larger set, but to make suer we don't duplicate entries and miss anything vital....
+    Method to aid choosing of random sample uids from larger set
     :param previous_selections:
     :param nnn:
     :return:
     '''
 
-    #just keep guessing until we find one that hasn't been used before
-    for i in range(sample_size):
-        uid_sample_indx = random.randrange(0, sample_size)
+    uids = []
 
-        if uid_sample_indx not in previous_selections:
-            return uid_sample_indx
+    #just keep guessing until we find one that hasn't been used before
+    while len(uids) < sample_size:
+
+        uid_sample_indx = random.randrange(0, len(all_available_ids))
+
+        if uid_sample_indx not in uids:
+            uids.append(all_available_ids[uid_sample_indx])
+
+    if len(uids) != sample_size:
+        print ("here")
+
+    return uids
 
 #todo: how does average delay change based on increasing sample size?  What sample size gives a reasonable idea of actual delay?
 '''
@@ -120,6 +130,7 @@ def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_fil
         # get successful synchroniser structure
         successful_syncs, bad_cnt = get_successful_downloads(lines)
 
+        #test = [i for i in successful_syncs['colhub.copernicus.eu']['uids'].keys()][0:9]
         source_configs = build_config_map(source_hub_config_dir, successful_syncs)
 
     if id:
@@ -170,26 +181,22 @@ def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_fil
 
             print(f"Assessing delay for {source} {product}")
 
-            uids = uids_by_product_type[source][product]
+            #uids = uids_by_product_type[source][product]
 
             delays = {}
 
             if not sample_number:
-                sample_number = len(uids_by_product_type[source][product])
+                #use ALL products identified
+                uids = uids_by_product_type[source][product]
+
+            else:
+                #use random selection based on sample number from the set of uid's identified
+                uids = choose_random_uid(uids_by_product_type[source][product], sample_number)
 
             dcnt=0
-            previous_selections = []
-            for report in range(0,sample_number):
+            #previous_selections = []
 
-                #todo - check this works without the -n option.
-                if sample_number:
-                    uid_sample_indx  = choose_random_uid(previous_selections, len(uids))
-                    previous_selections.append(uid_sample_indx)
-                    #uid_sample_indx = random.randrange(0,len(uids))
-                    uid = uids[uid_sample_indx]
-
-                else:
-                    uid = uids[report]
+            for uid in uids:
 
                 #get pub time on source hub
                 try:
