@@ -1,6 +1,7 @@
 import sys, re, urllib
 
 sys.path.append(".")
+sys.path.append("..")
 
 import click
 from click import command, option, Option, UsageError
