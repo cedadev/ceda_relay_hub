@@ -50,6 +50,36 @@ def get_hub_creds(filename):
     else:
         raise Exception("No such file: %s" % filename)
 
+def get_evict_template():
+
+    base_template = '''<a:entry>
+        <a:id>Evictions('S1A_Evictor_30102020')</a:id>
+        <a:title/>
+        <a:summary/>
+        <a:updated>2021-05-11T15:22:54Z</a:updated>
+        <a:author>
+        <a:name/>
+        </a:author>
+        <a:link rel="edit" href="Evictions('S1A_Evictor_30102020')"/>
+        <a:category scheme="http://docs.oasis-open.org/odata/ns/scheme" term="#OData.DHuS.Eviction"/>
+            <a:content type="application/xml">
+                <m:properties>
+                    <d:Name>D_NAME</d:Name>
+                    <d:KeepPeriod m:type="Int32">D_KEEP_PERIOD</d:KeepPeriod>
+                    <d:KeepPeriodUnit>D_KEEP_PERIOD_UNIT</d:KeepPeriodUnit>
+                    <d:MaxEvictedProducts m:type="Int32">D_MAX_PRODUCTS</d:MaxEvictedProducts>
+                    <d:Filter>D_FILTERPARAM</d:Filter>
+                    <d:SoftEviction m:type="Boolean">D_SOFT_EVICTION</d:SoftEviction>
+                    <d:Cron m:type="#OData.DHuS.Cron">
+                        <d:Active m:type="Boolean">D_ACTIVE</d:Active>
+                        <d:Schedule>D_SCHEDULE</d:Schedule>
+                    </d:Cron>
+                    </m:properties>
+            </a:content>
+        </a:entry>'''
+
+    return base_template
+
 def get_sync_template(geo = False, remote_incoming = False):
 
     base_template = '''<entry xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices"

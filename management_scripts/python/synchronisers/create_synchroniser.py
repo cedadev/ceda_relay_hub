@@ -8,16 +8,20 @@ import datetime
 import click
 import configparser
 
-from synchroniser import *
+from dhus_odata_api import *
 
-def label(params_file, src_hub, filter, loc = None):
+def label(params_file, filter= None, src_hub = None, loc = None):
     '''
-    Method to generate a synchroniser label according to ceda convention
+    Method to generate a synchroniser or evictor label according to ceda convention
     :return:
     '''
 
     # label
-    hub_label = src_hub.replace('https://', '').replace('http://', '').split('.')[0]
+    if src_hub:
+        hub_label = src_hub.replace('https://', '').replace('http://', '').split('.')[0]
+
+    else:
+        hub_label = ''
 
     if loc:
         loc = loc
