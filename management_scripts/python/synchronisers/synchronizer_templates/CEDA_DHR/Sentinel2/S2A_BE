@@ -1,0 +1,5 @@
+D_SCHEDULE=0 */2 * * * ?
+D_PAGESIZE=10
+D_COPYPRODUCT=true
+D_REQUEST=stop
+D_FILTERPARAM=startswith(Name,'S2A')

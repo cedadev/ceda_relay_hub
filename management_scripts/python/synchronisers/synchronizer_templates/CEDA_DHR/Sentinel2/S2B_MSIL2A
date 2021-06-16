@@ -1,0 +1,5 @@
+D_SCHEDULE=0 */1 * * * ?
+D_PAGESIZE=5
+D_COPYPRODUCT=true
+D_REQUEST=stop
+D_FILTERPARAM=startswith(Name,'S2B_MSIL2A')
