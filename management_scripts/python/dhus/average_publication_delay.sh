@@ -11,7 +11,7 @@ fi
 log=$1
 config=$2
 
-#This list of products should match all synchronisers where the filter element is set so we can show publication delay per synchroniser
+#This list of products should match all dhus where the filter element is set so we can show publication delay per synchroniser
 definitive_product_list="S3A_SL_1_RBT S3B_SL_1_RBT S1A_IW_SLC S1B_IW_SLC"
 runtime=`date`
 echo -e "\nLog file: ${log}"

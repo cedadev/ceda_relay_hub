@@ -1,6 +1,0 @@
-D_SCHEDULE=0 */1 * * * ?
-D_PAGESIZE=100
-D_COPYPRODUCT=false
-D_REQUEST=stop
-D_REMOTEINCOMING=/srh_data_incoming_1/srh-services3.ceda.ac.uk/data-archive/var/incoming/
-D_FILTERPARAM=startswith(Name,'S1')

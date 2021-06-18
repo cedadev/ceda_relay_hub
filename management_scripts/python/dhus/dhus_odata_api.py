@@ -292,7 +292,7 @@ def synchroniser_entries_request(tree, request = 'stop'):
     return entries
 
 def get_synchronisers(hub_config):
-    #get full response from hub on all synchronisers
+    #get full response from hub on all dhus
 
     #response = GET_from_hub(hub_config, odata_stub='Synchronizers')
     response = GET_from_hub(hub_config)

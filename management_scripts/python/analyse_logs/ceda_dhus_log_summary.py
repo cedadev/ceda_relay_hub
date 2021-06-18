@@ -873,7 +873,7 @@ def synchronizer_report(logfiles, write_products = None):
         errors = {}
         for line in filtered_log:
 
-            #successful synchronisers..
+            #successful dhus..
             try:
 
                 extracted_details = extract_synchronizer_details(line)
@@ -957,7 +957,7 @@ def synchronizer_report(logfiles, write_products = None):
     report_line += "Number of products successfully synchronised; %s\n" %sum(total_good.values()) #updated based on actual analysis of logs
     report_line += "Number of products that failed to synchronize; %s\n" %sum(total_bad.values()) # ''''''
 
-    report_line += "Number of synchronisers active; %s\n" %(len(sync_volume.keys()))
+    report_line += "Number of dhus active; %s\n" %(len(sync_volume.keys()))
 
     report_line +=  "\nSynchronizer\tProduct\tNum success/failed\tTot Size(Gb)\tTime Start\tTime End\tSens Date Start\tSens Date End\n"
 

@@ -39,8 +39,8 @@ def create_evictor(template, params, label_base, filter = None):
         return None, False
 
 @click.command()
-@click.option('-p', '--params-file', 'params_file', type=str, required=True, help='Basic parameters file for synchronisers')
-@click.option('-c', '--HOST-hub-config', 'this_hub_creds', type=str, required=True, help='hub credentials file for hub to run synchronisers FROM (i.e. ceda relay hub)')
+@click.option('-p', '--params-file', 'params_file', type=str, required=True, help='Basic parameters file for dhus')
+@click.option('-c', '--HOST-hub-config', 'this_hub_creds', type=str, required=True, help='hub credentials file for hub to run dhus FROM (i.e. ceda relay hub)')
 @click.option('-P', '--product-string', 'product_string', type=str,  required=False, help='Product string - will override D_FILTERPARAM in params file.')
 def main(params_file, this_hub_creds, product_string):
 
@@ -80,7 +80,6 @@ def main(params_file, this_hub_creds, product_string):
 
     print(resp)
 
-    print ("here")
 
 if __name__ == '__main__':
     main()

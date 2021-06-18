@@ -1,5 +1,0 @@
-D_SCHEDULE=0 */1 * * * ?
-D_PAGESIZE=10
-D_COPYPRODUCT=true
-D_REQUEST=start
-D_FILTERPARAM=startswith(Name,'S3A_SL_1_RBT__')

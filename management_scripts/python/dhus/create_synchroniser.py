@@ -84,9 +84,9 @@ def create_synchroniser(sync_template, params, src_hub, src_uname, src_password,
     return sync_template, True
 
 @click.command()
-@click.option('-p', '--params-file', 'params_file', type=str, required=True, help='Basic parameters file for synchronisers')
-@click.option('-c', '--HOST-hub-config', 'this_hub_creds', type=str, required=True, help='hub credentials file for hub to run synchronisers FROM (i.e. ceda relay hub)')
-@click.option('-s', '--SOURCE-hub-config', 'source_hub_creds', type=str, required=True, help='hub credentials file for hub to synchronisers TO (i.e. colhub)')
+@click.option('-p', '--params-file', 'params_file', type=str, required=True, help='Basic parameters file for dhus')
+@click.option('-c', '--HOST-hub-config', 'this_hub_creds', type=str, required=True, help='hub credentials file for hub to run dhus FROM (i.e. ceda relay hub)')
+@click.option('-s', '--SOURCE-hub-config', 'source_hub_creds', type=str, required=True, help='hub credentials file for hub to dhus TO (i.e. colhub)')
 @click.option('-l', '--LastCreationDate', 'lastcreationdate', type=str,  required=False, help='LastCreationDate. Use format YYYY-MM-DDTHH:MM:SS. If not set will default to 00:00:00 pf current date')
 @click.option('-b', '--BoundingBox-config', 'bboxes_cfg', type=str,  required=False, help='Boundingbox config if supplied.')
 @click.option('-P', '--product-string', 'product_string', type=str,  required=False, help='Product string - will override D_FILTERPARAM in params file.')
@@ -162,12 +162,12 @@ def main(params_file, this_hub_creds, source_hub_creds, lastcreationdate, bboxes
         print (f"Cannot access configurations: {ex}")
         sys.exit()
 
-    #get existing synchronisers, if any
+    #get existing dhus, if any
     try:
         existing_synchronisers = synchroniser_summary(get_synchronisers(this_hub_creds))
 
     except Exception as ex:
-        print (f"Cannot access hub to assess existing synchronisers: {ex}")
+        print (f"Cannot access hub to assess existing dhus: {ex}")
         sys.exit()
 
     #extract params

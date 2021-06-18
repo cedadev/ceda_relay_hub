@@ -1,4 +1,4 @@
-#script to delete one or a list of synchronisers
+#script to delete one or a list of dhus
 import os, sys
 import requests
 from requests.auth import HTTPBasicAuth
@@ -22,7 +22,7 @@ def parse_the_args(hub_creds, syncs, name):
         sys.exit()
 
     elif syncs in ['All', 'all', 'ALL'] and name in ['None', 'none', None]:
-        #All synchronisers and no name match
+        #All dhus and no name match
         return sync_ids
 
     elif name in ['None', 'none', None]:

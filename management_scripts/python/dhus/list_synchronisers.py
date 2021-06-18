@@ -36,7 +36,7 @@ def main(hub_config, email):
         synchronisers = synchroniser_summary(get_synchronisers(hub_config))
 
     except Exception as ex:
-        print (f"Could not list synchronisers for hub: {hub_config} ({ex})")
+        print (f"Could not list dhus for hub: {hub_config} ({ex})")
         sys.exit()
 
     report = ''
@@ -69,16 +69,16 @@ def main(hub_config, email):
                 src_hub = synchronisers[sync]['url'].replace('https://','').replace('http://','').split('.')[0]
 
                 if warning_msg:
-                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, source = {src_hub}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd}) {warning_msg}"
+                    report += f"Label: {sync} (id = {dhus[sync]['id']}, source = {src_hub}, status = {dhus[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd}) {warning_msg}"
 
                 else:
-                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, source = {src_hub}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd})"
+                    report += f"Label: {sync} (id = {dhus[sync]['id']}, source = {src_hub}, status = {dhus[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd})"
 
                 report +="\n"
 
         cnt +=1
 
-    report += f"\nFound {len(synchronisers.keys())} synchronisers for hub {hub_config} at {datetime.datetime.now()}"
+    report += f"\nFound {len(dhus.keys())} dhus for hub {hub_config} at {datetime.datetime.now()}"
 
     #send email if requested
     if email and warning_msg:

@@ -1,4 +1,4 @@
-#script to bulk start or stop synchronisers
+#script to bulk start or stop dhus
 
 import sys, os
 import click
@@ -22,11 +22,11 @@ def main(this_hub_creds, op, id, name):
         sys.exit()
 
     if not id and not name:
-        print("Please supply either an ID (-i) OR a name or substring (-n) for synchronisers! ")
+        print("Please supply either an ID (-i) OR a name or substring (-n) for dhus! ")
         sys.exit()
 
     if id and name:
-        print("Please supply either an ID (-i) OR a name or substring (-n) for synchronisers! ")
+        print("Please supply either an ID (-i) OR a name or substring (-n) for dhus! ")
         sys.exit()
 
     sync_ids = parse_the_args(this_hub_creds, id, name)
@@ -39,7 +39,7 @@ def main(this_hub_creds, op, id, name):
         entries = synchroniser_entries_request(sync_template, request=op)
 
     except Exception as ex:
-        print(f"Could not list synchronisers for hub: {this_hub_creds} ({ex}")
+        print(f"Could not list dhus for hub: {this_hub_creds} ({ex}")
         sys.exit()
 
     if not id and name:
@@ -57,7 +57,7 @@ def main(this_hub_creds, op, id, name):
     #for sync in entries.keys():
      #   print (f"Label: {sync} (id = {entries[sync]['id']}, status = {entries[sync]['status']})")
 
-    print (f"{op} {len(sync_ids)} synchronisers for hub {this_hub_creds} ")
+    print (f"{op} {len(sync_ids)} dhus for hub {this_hub_creds} ")
 
 if __name__ == '__main__':
     main()
