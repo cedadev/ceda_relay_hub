@@ -50,6 +50,48 @@ def get_hub_creds(filename):
     else:
         raise Exception("No such file: %s" % filename)
 
+def get_evict_template():
+    '''base_template = <a:entry xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices"
+        xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
+        xmlns="http://www.w3.org/2005/Atom">
+    <id>Evictions('D_NAME')</id>
+    <title/>
+    <summary/>
+    <updated>2021-05-11T15:22:54Z</updated>
+    <author>
+    <name/>
+    </author>
+    <link rel="edit" href="Evictions('D_NAME')"/>
+    <category scheme="http://docs.oasis-open.org/odata/ns/scheme" term="#OData.DHuS.Eviction"/>
+        <content type="application/xml">
+            <m:properties>
+                <d:Name>D_NAME</d:Name>
+                <d:KeepPeriod m:type="Int32">D_KEEP_PERIOD</d:KeepPeriod>
+                <d:KeepPeriodUnit>D_KEEP_PERIOD_UNIT</d:KeepPeriodUnit>
+                <d:MaxEvictedProducts m:type="Int32">D_MAX_PRODUCTS</d:MaxEvictedProducts>
+                <d:Filter>D_FILTERPARAM</d:Filter>
+                <d:SoftEviction m:type="Boolean">D_SOFT_EVICTION</d:SoftEviction>
+                <d:Cron m:type="#OData.DHuS.Cron">
+                    <d:Active m:type="Boolean">D_ACTIVE</d:Active>
+                    <d:Schedule>D_SCHEDULE</d:Schedule>
+                </d:Cron>
+            </m:properties>
+        </content>
+    </a:entry>'''
+
+    # v2/odata takes JSON style content
+    base_template = '''{ "Name":"D_NAME", 
+        "KeepPeriod":D_KEEP_PERIOD, 
+        "KeepPeriodUnit":"D_KPPERIOD_UNIT", 
+        "MaxEvictedProducts":D_MAX_PRODUCTS, 
+        "Filter":"D_FILTERPARAM", 
+        "OrderBy":"IngestionDate desc", 
+        "SoftEviction":true, 
+        "Status":"STOPPED", 
+        "Cron": {"Active":false, "Schedule":"D_SCHEDULE"} }
+    '''
+    return base_template
+
 def get_sync_template(geo = False, remote_incoming = False):
 
     base_template = '''<entry xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices"
@@ -91,14 +133,9 @@ def get_sync_template(geo = False, remote_incoming = False):
 
     return base_template
 
-def POST_to_hub(hub, hub_uname, hub_password, data, PUT = False, synchroniser_id = None ):
-
-    header = {"Content-type": "application/atom+xml",
-              "Accept": "application/atom+xml"}
+def POST_to_hub(hub, hub_uname, hub_password, header, data, PUT = False, synchroniser_id = None ):
 
     acceptable_dhus_return_codes = [200, 201, 202, 203, 204]
-
-    hub = synchroniser_id_url(hub, id = synchroniser_id)
 
     # sys.exit()
     try:
@@ -124,17 +161,21 @@ def GET_from_hub(hub_config, odata_stub=None):
 
     hub, hub_uname, hub_password = get_hub_creds(hub_config)
 
+    hub = synchroniser_id_url(hub)
+
     #add stub if needed
     if odata_stub:
         hub = f"{hub}/{odata_stub}"
 
     return requests.get(hub, auth=HTTPBasicAuth(hub_uname, hub_password), verify=False)
 
+'''
 def PUT_to_hub_DEP(hub_config, template):
 
     hub, hub_uname, hub_password = get_hub_creds(hub_config)
 
     return requests.put(url, auth=HTTPBasicAuth(hub_uname, hub_password))
+'''
 
 def get_existing_details(content):
 
@@ -253,7 +294,8 @@ def synchroniser_entries_request(tree, request = 'stop'):
 def get_synchronisers(hub_config):
     #get full response from hub on all synchronisers
 
-    response = GET_from_hub(hub_config, odata_stub='Synchronizers')
+    #response = GET_from_hub(hub_config, odata_stub='Synchronizers')
+    response = GET_from_hub(hub_config)
 
     if response.status_code not in [200,202]:
         raise Exception (f"Problem accessing hub (error {response.status_code})")
@@ -264,7 +306,18 @@ def synchroniser_id_url(hub, id=None):
 
     #make sure that the hub url includes the synchronusers endpoint
     if os.path.basename(hub) != 'Synchronizers':
-        hub = f'{hub}/Synchronizers'
+        hub = f'{hub}/v1/Synchronizers'
+
+    if id:
+        return (f'{hub}({id})')
+    else:
+        return hub
+
+def eviction_id_url(hub, id=None):
+
+    #make sure that the hub url includes the synchronusers endpoint
+    if os.path.basename(hub) != 'Evictions':
+        hub = f'{hub}/v2/Evictions'
 
     if id:
         return (f'{hub}({id})')
