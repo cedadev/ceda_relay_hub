@@ -188,7 +188,12 @@ def main(params_file, this_hub_creds, source_hub_creds, lastcreationdate, bboxes
 
         # Now post to SRH hub.
         if cont:
-            resp = POST_to_hub(hub, hub_uname, hub_password, data=sync_template)
+            hub = synchroniser_id_url(hub)
+
+            header = {"Content-type": "application/atom+xml",
+                      "Accept": "application/atom+xml"}
+
+            resp = POST_to_hub(hub, hub_uname, hub_password, header, data=sync_template)
 
         print (resp)
 
