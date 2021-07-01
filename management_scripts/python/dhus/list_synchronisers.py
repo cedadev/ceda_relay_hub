@@ -5,7 +5,8 @@ import datetime
 import click
 import smtplib
 from get_product_details import analyse_delay, daily_report
-from synchroniser import *
+
+from dhus_odata_api import *
 
 PUB_DELAY = 4 #hours!
 WARN_DELAY = 2 #hours  Setup warning if this exceeded
@@ -69,16 +70,16 @@ def main(hub_config, email):
                 src_hub = synchronisers[sync]['url'].replace('https://','').replace('http://','').split('.')[0]
 
                 if warning_msg:
-                    report += f"Label: {sync} (id = {dhus[sync]['id']}, source = {src_hub}, status = {dhus[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd}) {warning_msg}"
+                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, source = {src_hub}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd}) {warning_msg}"
 
                 else:
-                    report += f"Label: {sync} (id = {dhus[sync]['id']}, source = {src_hub}, status = {dhus[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd})"
+                    report += f"Label: {sync} (id = {synchronisers[sync]['id']}, source = {src_hub}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd})"
 
                 report +="\n"
 
         cnt +=1
 
-    report += f"\nFound {len(dhus.keys())} dhus for hub {hub_config} at {datetime.datetime.now()}"
+    report += f"\nFound {len(synchronisers.keys())} dhus for hub {hub_config} at {datetime.datetime.now()}"
 
     #send email if requested
     if email and warning_msg:
