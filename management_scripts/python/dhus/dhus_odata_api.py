@@ -161,13 +161,14 @@ def GET_from_hub(hub_config, odata_stub=None):
 
     hub, hub_uname, hub_password = get_hub_creds(hub_config)
 
-    hub = synchroniser_id_url(hub)
+    #hub = synchroniser_id_url(hub)
+    #url = f"{hub}/{odata_stub}"
 
     #add stub if needed
     if odata_stub:
-        hub = f"{hub}/{odata_stub}"
+        url = f"{hub}/{odata_stub}"
 
-    return requests.get(hub, auth=HTTPBasicAuth(hub_uname, hub_password), verify=False)
+    return requests.get(url, auth=HTTPBasicAuth(hub_uname, hub_password), verify=False)
 
 '''
 def PUT_to_hub_DEP(hub_config, template):
@@ -295,7 +296,10 @@ def get_synchronisers(hub_config):
     #get full response from hub on all dhus
 
     #response = GET_from_hub(hub_config, odata_stub='Synchronizers')
-    response = GET_from_hub(hub_config)
+
+    #url = synchroniser_id_url(hub)
+
+    response = GET_from_hub(hub_config, odata_stub='v1/Synchronizers')
 
     if response.status_code not in [200,202]:
         raise Exception (f"Problem accessing hub (error {response.status_code})")
@@ -304,9 +308,14 @@ def get_synchronisers(hub_config):
 
 def synchroniser_id_url(hub, id=None):
 
+    #todo make sure this now works with the synchroniser etc upload {30/06/2021)
     #make sure that the hub url includes the synchronusers endpoint
     if os.path.basename(hub) != 'Synchronizers':
-        hub = f'{hub}/v1/Synchronizers'
+
+        if os.path.basename(hub) == 'v1': #fudge...
+            hub = f'{hub}/Synchronizers'
+        else:
+            hub = f'{hub}/v1/Synchronizers'
 
     if id:
         return (f'{hub}({id})')

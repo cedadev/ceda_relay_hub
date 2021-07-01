@@ -19,9 +19,10 @@ from click import command, option, Option, UsageError
 from collections import defaultdict
 import random
 
-from synchronisers.get_product_details import get_product_details, report_line, average_delay_hours, analyse_delay, get_delay, UIDnotOnHubError
+from dhus.get_product_details import get_product_details, report_line, average_delay_hours, analyse_delay, get_delay, UIDnotOnHubError
 from analyse_logs.extract_detail_info import get_successful_downloads
-from synchronisers.synchroniser import get_hub_creds
+#from dhus.synchroniser import get_hub_creds
+from dhus_odata_api import *
 
 #SOURCE_SAMPLE_LIMIT = 10 #for the moment sample size to take from the uids retrieved.  If we do all, could swamp the local and remote hubs
 
@@ -212,8 +213,9 @@ def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_fil
                 except UIDnotOnHubError as ex:
                     #print (f"here {ex}")
                     #Product removed or not actually on hub anymore - record it in similar data structure
-                    if len(problems_by_product_type[source].keys()) == 0:
-                        problems_by_product_type[source] = {product:[uid]}
+                    #if len(problems_by_product_type[source].keys()) == 0:
+                    if product not in problems_by_product_type[source].keys():
+                        problems_by_product_type[source].update({product:[uid]})
 
                     else:
                         problems_by_product_type[source][product].append(uid)

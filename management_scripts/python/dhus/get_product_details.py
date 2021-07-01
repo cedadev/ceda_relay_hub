@@ -1,5 +1,6 @@
 import os, sys
-from synchroniser import *
+#from synchroniser import *
+from dhus_odata_api import *
 from datetime import datetime
 from urllib.parse import urlparse
 import math
@@ -38,7 +39,7 @@ def get_product_details(hub_config, uid):
     :return:
     '''
 
-    stub = f"Products('{uid}')"
+    stub = f"v1/Products('{uid}')"
 
     msg = None
 
