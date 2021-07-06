@@ -4,7 +4,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import click
 
-from synchroniser import *
+from dhus_odata_api import *
 
 def parse_the_args(hub_creds, syncs, name):
     '''Need this as several different modes'''

@@ -133,18 +133,21 @@ def get_sync_template(geo = False, remote_incoming = False):
 
     return base_template
 
-def POST_to_hub(hub, hub_uname, hub_password, header, data, PUT = False, synchroniser_id = None ):
+def POST_to_hub(url, hub_uname, hub_password, data, header=None, PUT = False, synchroniser_id = None, odata_stub=None ):
 
     acceptable_dhus_return_codes = [200, 201, 202, 203, 204]
+
+    if odata_stub:
+        url = f"{url}/{odata_stub}"
 
     # sys.exit()
     try:
 
         if not PUT:
-            response = requests.post(hub, data = data, headers = header, auth = HTTPBasicAuth(hub_uname, hub_password), verify=False)
+            response = requests.post(url, data = data, headers = header, auth = HTTPBasicAuth(hub_uname, hub_password), verify=False)
 
         else:
-            response = requests.put(hub, data=data, headers=header, auth=HTTPBasicAuth(hub_uname, hub_password),verify=False)
+            response = requests.put(url, data=data, headers=header, auth=HTTPBasicAuth(hub_uname, hub_password),verify=False)
 
         if response.status_code not in acceptable_dhus_return_codes:
             raise Exception(f"Incorrect response recieved (status: {response.status_code}; message: {response.content}")

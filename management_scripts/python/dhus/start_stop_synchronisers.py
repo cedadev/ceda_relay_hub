@@ -2,7 +2,7 @@
 
 import sys, os
 import click
-from synchroniser import *
+from dhus_odata_api import *
 from delete_synchroniser import parse_the_args
 
 @click.command()
@@ -50,7 +50,9 @@ def main(this_hub_creds, op, id, name):
 
         entry_xml = entries[id]
 
-        resp = POST_to_hub(hub, hub_uname, hub_password, entry_xml, PUT=True, synchroniser_id = id)
+        odata_stub = 'v1/Synchronizers'
+
+        resp = POST_to_hub(hub, hub_uname, hub_password, entry_xml, PUT=True, synchroniser_id = id, odata_stub = odata_stub)
 
         #print(resp)
 
