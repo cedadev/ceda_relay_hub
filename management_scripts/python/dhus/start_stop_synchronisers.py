@@ -54,7 +54,14 @@ def main(this_hub_creds, op, id, name, all):
 
         odata_stub = 'v1/Synchronizers'
 
-        resp = POST_to_hub(hub, hub_uname, hub_password, entry_xml, PUT=True, synchroniser_id = id, odata_stub = odata_stub)
+        url = synchroniser_id_url(hub, id = id)
+
+        header = {"Content-type": "application/atom+xml",
+                  "Accept": "application/atom+xml"}
+
+        resp = POST_to_hub(url, hub_uname, hub_password, entry_xml, header=header)
+
+        #resp = POST_to_hub(hub, hub_uname, hub_password, entry_xml, PUT=True, synchroniser_id = id, odata_stub = odata_stub)
         #resp = POST_to_hub(hub, hub_uname, hub_password, entry_xml, synchroniser_id=id, odata_stub=odata_stub)
 
         print(resp)
