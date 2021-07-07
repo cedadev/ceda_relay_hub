@@ -193,7 +193,8 @@ def main(params_file, this_hub_creds, source_hub_creds, lastcreationdate, bboxes
             header = {"Content-type": "application/atom+xml",
                       "Accept": "application/atom+xml"}
 
-            resp = POST_to_hub(hub, hub_uname, hub_password, header, data=sync_template)
+            resp = POST_to_hub(hub, hub_uname, hub_password, sync_template, header=header)
+            #POST_to_hub(hub, hub_uname, hub_password, entry_xml, PUT=True, synchroniser_id=id, odata_stub=odata_stub)
 
         print (resp)
 
