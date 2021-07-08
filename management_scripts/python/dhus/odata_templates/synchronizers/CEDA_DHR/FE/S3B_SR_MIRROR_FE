@@ -1,0 +1,6 @@
+D_SCHEDULE=0 */1 * * * ?
+D_PAGESIZE=100
+D_COPYPRODUCT=false
+D_REQUEST=stop
+D_FILTERPARAM=startswith(Name,'S3B_SR_1_SRA__')
+D_REMOTEINCOMING=/srh_data_incoming_4/srh-services6.ceda.ac.uk//data-archive/var/incoming/

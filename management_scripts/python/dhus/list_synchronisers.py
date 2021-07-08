@@ -29,7 +29,7 @@ def delay_warning(days, hrs, mins, secs):
 
 @click.command()
 @click.option('-c', '--hub-config', 'hub_config', type=str, required=True, help='Location of hub admin credos')
-@click.option('-e', '--email', 'email', type=str, help='if supplied will email report ONLY if thresholds exceeded and not output to STDOUT')
+@click.option('-e', '--email', 'email', type=str, help='if supplied will email report ONLY if thresholds exceeded and not output to STDOUT.  separate multiple emails with a comma "," ')
 def main(hub_config, email):
 
     try:
@@ -83,16 +83,25 @@ def main(hub_config, email):
 
     #send email if requested
     if email and warning_msg:
+
+        if ',' in email:
+            recipients = email.split(',')
+
+        else:
+            recipients = [email]
+
         try:
             from email.mime.text import MIMEText
-            msg = MIMEText(report)
-            msg['Subject'] = 'Relay Hub Publication delay Synchroniser ALERT!"'
-            msg['From'] = email
-            msg['To'] = email
 
-            s = smtplib.SMTP('localhost')
-            s.sendmail(msg['From'], msg['To'], msg.as_string())
-            s.quit()
+            for recipient in recipients:
+                msg = MIMEText(report)
+                msg['Subject'] = 'Relay Hub Publication delay Synchroniser ALERT!"'
+                msg['From'] = recipient
+                msg['To'] = recipient
+
+                s = smtplib.SMTP('localhost')
+                s.sendmail(msg['From'], msg['To'], msg.as_string())
+                s.quit()
 
         except Exception as ex:
             print (f"\nERROR: Could not send email: {ex}")
