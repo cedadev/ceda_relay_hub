@@ -155,6 +155,11 @@ def main(params_file, this_hub_creds, source_hub_creds, lastcreationdate, bboxes
         #hub to synchronise FROM
         src_hub, src_uname, src_password = get_hub_creds(source_hub_creds)
 
+        #12/07/2021 ISSUE: Due to the change in format of the hub_creds files to accomodate synchrinisers AND eviction and therefore differing odata versions,
+        #                  we need to add in the odata version on hub's we're synchronising FROM as this causes the synchronisers to fail on the target hub.
+        if os.path.basename(src_hub) != 'v1':
+            src_hub = f"{src_hub}/v1"
+
         #local hub to synchronise TO
         hub, hub_uname, hub_password = get_hub_creds(this_hub_creds)
 

@@ -76,7 +76,8 @@ def main(params_file, this_hub_creds, product_string):
         header = {"Content-type": "application/json",
                   "Accept": "application/json"}
 
-        resp = POST_to_hub(hub, hub_uname, hub_password, header, data=evict_template)
+        #resp = POST_to_hub(hub, hub_uname, hub_password, header, data=evict_template)
+        resp = POST_to_hub(hub, hub_uname, hub_password, evict_template, header=header)
 
     print(resp)
 
