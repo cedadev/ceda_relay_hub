@@ -573,6 +573,7 @@ def download_report(logfiles):
         except Exception as ex:
             raise Exception( "ERROR: Unable to open logfile: %s (%s)" %(logfilename, ex))
 
+        cnt =0
         for line in filtered_log:
 
              #successful downloads..
@@ -584,8 +585,10 @@ def download_report(logfiles):
                     downloads.append(deepcopy(extracted_details))
 
             except Exception as ex:
-                raise Exception( "ERROR: Unable to summarise download activity from log: %s (%s)" %(logfilename, ex))
-
+                print ( f"WARNING: Unable to summarise download activity from log (line {cnt}: {logfilename} {ex}" )
+                pass
+                #raise Exception( "ERROR: Unable to summarise download activity from log: %s (%s)" %(logfilename, ex))
+            cnt+=1
     #identify unique users
     try:
         download_users = summarise(downloads,'user', unique=True)
@@ -875,7 +878,6 @@ def synchronizer_report(logfiles, write_products = None):
 
             #successful dhus..
             try:
-
                 extracted_details = extract_synchronizer_details(line)
 
                 if extracted_details is not None:
