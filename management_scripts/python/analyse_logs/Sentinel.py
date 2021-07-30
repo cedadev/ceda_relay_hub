@@ -16,7 +16,7 @@ class Sentinel_Product(object):
     #sensing date string indices by mission
     #updated - dict as value indicates where different naming structures used for same mission.  Thats you S2A.. (PIA).
     SENSING_DATE_PARAMS = {'S1A':'17:32', 'S1B':'17:32', 'S2A':{'S2A_OPER_PRD_MSIL1C':'25:40', 'S2A_MSIL1C':'11:26','S2A_MSIL2A':'11:26'},\
-                           'S2B':{'S2B_OPER_PRD_MSIL1C':'25:40', 'S2B_MSIL1C':'11:26','S2A_MSIL2A':'11:26'}, 'S3A':'16:30', 'S3B':'16:30', 'S5P':'20:35'}
+                           'S2B':{'S2B_OPER_PRD_MSIL1C':'25:40', 'S2B_MSIL1C':'11:26','S2A_MSIL2A':'11:26', 'S2B_MSIL2A':'11:26'}, 'S3A':'16:30', 'S3B':'16:30', 'S5P':'20:35'}
 
     #product type string indices by mission.  Follow convention used for SENSING_DATA_PARAMS
     #S1 See https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/naming-conventions
@@ -24,7 +24,7 @@ class Sentinel_Product(object):
     #S3 See
     #PRODUCT_NAME_PARAMS = {'S1A':'0:11', 'S1B':'0:11', 'S2A':'0:19'}
     PRODUCT_NAME_PARAMS = {'S1A':'0:11', 'S1B':'0:11', 'S2A':{'S2A_OPER_PRD_MSIL1C':'0:19', 'S2A_MSIL1C':'0:10', 'S2A_MSIL2A':'0:10'}, \
-                           'S2B':{'S2B_OPER_PRD_MSIL1C':'0:19', 'S2B_MSIL1C':'0:10', 'S2A_MSIL2A':'0:10'}, 'S3A':'0:11', 'S3B':'0:11', 'S5P':'0:20'}
+                           'S2B':{'S2B_OPER_PRD_MSIL1C':'0:19', 'S2B_MSIL1C':'0:10', 'S2B_MSIL2A':'0:10'}, 'S3A':'0:11', 'S3B':'0:11', 'S5P':'0:20'}
 
 
     def get_product_date(self, date=False):
