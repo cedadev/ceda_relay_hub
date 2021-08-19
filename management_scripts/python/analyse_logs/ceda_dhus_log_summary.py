@@ -885,7 +885,7 @@ def synchronizer_report(logfiles, write_products = None):
 
             except Exception as ex:
                 bad_line_count +=1
-                errors[line_count] = ex.message
+                errors[line_count] = ex
                 #raise Exception( "ERROR: Unable to summarise synchroniser activity from log line %s: %s (%s)" %(line_count-1,logfilename, ex))
 
             line_count += 1
