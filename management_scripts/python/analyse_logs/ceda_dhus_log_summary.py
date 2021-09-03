@@ -889,7 +889,7 @@ def synchronizer_report(logfiles, write_products = None):
                 #raise Exception( "ERROR: Unable to summarise synchroniser activity from log line %s: %s (%s)" %(line_count-1,logfilename, ex))
 
             line_count += 1
-
+            #something added to test new git pat...S
         if bad_line_count > 0:
             print ("WARNING!  Found %s bad lines in log %s.  Possible Java system errors in log.  Please investigate!" %(bad_line_count, logfilename))
             for error in errors.keys():
