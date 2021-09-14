@@ -104,11 +104,10 @@ def main(hub_config, email):
                 s.quit()
 
         except Exception as ex:
-            print (f"\nERROR: Could not send email: {ex}")
+            print (f"\nERROR: Could not send email to: {email}")
 
     else:
         print(report)
-
 
 if __name__ == '__main__':
     main()
