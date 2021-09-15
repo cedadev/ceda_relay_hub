@@ -42,6 +42,7 @@ def main(hub_config, email):
 
     report = ''
     cnt = 0
+    warning_flag = False
     #order report by current synchroniser status
     for status in SYNC_STATUS:
 
@@ -60,8 +61,11 @@ def main(hub_config, email):
 
                 days, hrs, mins, secs = analyse_delay(datetime.datetime.now() - datetime.datetime.strptime(lcd, '%Y-%m-%dT%H:%M:%S.%f'))
 
-                #check for any warning
+                #check for any warning and flag up if one encountered
                 warning_msg = delay_warning( days, hrs, mins, secs)
+
+                if warning_msg:
+                    warning_flag = True
 
                 #pretty print the delay
                 delay_str = daily_report(days, hrs, mins, secs)
@@ -82,32 +86,38 @@ def main(hub_config, email):
     report += f"\nFound {len(synchronisers.keys())} dhus for hub {hub_config} at {datetime.datetime.now()}"
 
     #send email if requested
-    if email and warning_msg:
+    if email:
 
-        if ',' in email:
-            recipients = email.split(',')
+        if warning_flag:
 
-        else:
-            recipients = [email]
+            if ',' in email:
+                recipients = email.split(',')
 
-        try:
-            from email.mime.text import MIMEText
+            else:
+                recipients = [email]
 
-            for recipient in recipients:
-                msg = MIMEText(report)
-                msg['Subject'] = 'Relay Hub Publication delay Synchroniser ALERT!"'
-                msg['From'] = recipient
-                msg['To'] = recipient
+            try:
+                from email.mime.text import MIMEText
 
-                s = smtplib.SMTP('localhost')
-                s.sendmail(msg['From'], msg['To'], msg.as_string())
-                s.quit()
+                for recipient in recipients:
+                    msg = MIMEText(report)
+                    msg['Subject'] = 'Relay Hub Publication delay Synchroniser ALERT!"'
+                    msg['From'] = recipient
+                    msg['To'] = recipient
 
-        except Exception as ex:
-            print (f"\nERROR: Could not send email to: {email}")
+                    s = smtplib.SMTP('localhost')
+                    s.sendmail(msg['From'], msg['To'], msg.as_string())
+                    s.quit()
+
+                sys.exit(0)
+
+            except Exception as ex:
+                print (f"\nERROR: Could not send email to: {email}")
+                sys.exit(1)
 
     else:
         print(report)
+        sys.exit(0)
 
 if __name__ == '__main__':
     main()
