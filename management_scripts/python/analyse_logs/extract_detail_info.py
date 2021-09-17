@@ -89,7 +89,14 @@ def analyse_log(lines, phrases):
             try:
                 uid = re.findall("'([a-zA-Z0-9-]*)'", line)[0]
                 product_name = re.findall("S[1-3][A-B].*\.zip", line)[0]
-                product = product_name[0:12]
+
+                #print (product_name)
+
+                #now we discover this is not true for S2...
+                if 'S2' == product_name[0:2]:
+                    product = product_name[0:10]
+                else:
+                    product = product_name[0:12]
 
                 # todo: for some reason url parse failed on pycharm run but NOT debug...? replaced with clunkier one liner.  And http?
                 # hub = urllib.parse.urlparse(re.findall('https.*/Products', line)[0]).netloc
