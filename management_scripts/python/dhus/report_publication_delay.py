@@ -18,6 +18,7 @@ import click
 from click import command, option, Option, UsageError
 from collections import defaultdict
 import random
+import datetime
 
 from dhus.get_product_details import get_product_details, report_line, average_delay_hours, analyse_delay, get_delay, UIDnotOnHubError
 from analyse_logs.extract_detail_info import get_successful_downloads
@@ -79,6 +80,11 @@ def build_config_map(source_hub_config_dir, successful_syncs):
         print(f"Source hub directory: {source_hub_config_dir} does not exist!")
         sys.exit()
 
+    if len(config_map.keys()) != len(successful_syncs.keys()):
+        #find which one is missing (https://stackoverflow.com/questions/3462143/get-difference-between-two-lists)
+        for missing_sync in list(set(successful_syncs.keys()) - set(config_map.keys())):
+            print (f"WARNING: unable to find config file for {missing_sync}")
+
     return config_map
 
 
@@ -123,6 +129,10 @@ TODO: how does a
               cls=MutuallyExclusiveOption, mutually_exclusive=["id", "source_hub_config"])
 @click.option('--line', is_flag=True, help="Will print out in ASCENDING ingestion time order the list of uid's and associated publication delay")
 def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_file, line, id, sample_number):
+
+    tstamp=datetime.datetime.now().strftime("%d-%m-%yT%H:%M:%S")
+
+    print (f"\n\nReport timestamp: {tstamp}\n\n")
 
     if hub_log_file:
         with open(hub_log_file) as r:
@@ -258,6 +268,8 @@ def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_fil
             #print ("\n")
 
     #average needs to be based on the sampled set - whether full or a random selection
+
+    #average per product....
     for source in delays_by_product_type.keys():
         print(f"********** Publication delay for source: {source} **********")
 
@@ -281,5 +293,25 @@ def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_fil
                 print (f"Could not calculate publication delay as no products found!")
             print ("\n")
 
+    # average per source....
+    print(f"********** Publication delay report BY source **********")
+
+    for source in delays_by_product_type.keys():
+
+        filtered_uids_by_source = {}
+
+        for uid in [j for j in [delays_by_product_type[source][i] for i in delays_by_product_type[source]]]:
+            #filtered_uids_by_source.extend(uid.keys())
+            #merge dicts - see https://stackoverflow.com/questions/38987/how-do-i-merge-two-dictionaries-in-a-single-expression-taking-union-of-dictiona
+            filtered_uids_by_source = {**filtered_uids_by_source, **uid}
+
+        avg_hrs, avg_mins = average_delay_hours([i for i in filtered_uids_by_source.values()])
+
+        #print(f"Average publication delay: {avg_hrs} hrs {avg_mins} mins for\
+                             #{len(filtered_uids_by_source.keys())} records from  source: {source} to: {loc_hub_domain}")
+
+        print(f"Source: {source} to: {loc_hub_domain}: {str(avg_hrs).zfill(2)}:{str(avg_mins).zfill(2)} (HH:MM)")
+
 if __name__ == '__main__':
     main()
+
