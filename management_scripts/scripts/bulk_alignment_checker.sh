@@ -4,15 +4,24 @@
 # Primary (srh with top level reference hub)
 # Secondary (srh with actual source hub)
 # Source-to-Primary (alignment of source hub with primary hub).
+if [ $# != 5 ]
+then
+        echo "Usage: <days back to check i.e. 5> <product string i.e. S1A> <primary order config i.e. colhub> <secondary order config i.e. greek> <src-primary config>"
+        echo "Note: configs must be the alignment reporting configs that check use at least TWO hubs with reference usually colhub and another hub i.e SRH or airbus etc"
+        exit
+fi
 
 days_back=$1
 prod_string=$2
+primary=$3
+secondary=$4
+sourceTOprimary=$5
 
 script_loc="/usr/local/srh_install//sentinel/python/Find_Sentinel_Data.py"
 
-primary="/usr/local/srh_install/reporting//config//alignment_reporting_PRIMARY.cfg"
-secondary="/usr/local/srh_install/reporting//config//alignment_reporting_SECONDARY.cfg"
-sourceTOprimary="/usr/local/srh_install/reporting//config//alignment_reporting_SRC-PRIMARY.cfg"
+#primary="/usr/local/srh_install/reporting//config//alignment_reporting_PRIMARY.cfg"
+#secondary="/usr/local/srh_install/reporting//config//alignment_reporting_SECONDARY.cfg"
+#sourceTOprimary="/usr/local/srh_install/reporting//config//alignment_reporting_SRC-PRIMARY.cfg"
 
 echo -e "Hub alignment report: `date +\%d-\%m-\%Y" "\%H:\%M:\%S` \n"
 
@@ -24,6 +33,9 @@ do
 
         cnt=1
         for j in "${primary}" "${secondary}" "${sourceTOprimary}" ;do
+
+                #get some summary info so can see which hubs are synchronising
+                which_hubs=`grep "target:" $j | awk '{print $2}' | tr '\n' ' ' | awk '{print $1" => "$2}'`
                 aligned=`python3 $script_loc -c $j -N -S $days_ago -E $days_ago -p $prod_string | grep aligned | awk '{print $4}'`
                 #aligned=`python3 $script_loc -c $j -N -S $days_ago -E \`date --date='1 day ago' +\%d-\%m-\%Y\` -p $prod_string | grep aligned | awk '{print $4}'`
 
@@ -39,7 +51,7 @@ do
                         msg="SOURCE-REFERENCE"
                 fi
 
-                echo "${msg} (${prod_string}): ${aligned}%"
+                echo "${msg} (${which_hubs}) product: ${prod_string}  ${aligned}%"
 
                 cnt=`expr $cnt + 1`
 
