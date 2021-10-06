@@ -4,9 +4,11 @@
 # Primary (srh with top level reference hub)
 # Secondary (srh with actual source hub)
 # Source-to-Primary (alignment of source hub with primary hub).
-if [ $# != 5 ]
+# BE-FE (alignment of backend and frontend SRH hubs).
+if [ $# != 6 ]
 then
-        echo "Usage: <days back to check i.e. 5> <product string i.e. S1A> <primary order config i.e. colhub> <secondary order config i.e. greek> <src-primary config>"
+        echo "Usage: <days back to check i.e. 5> <product string i.e. S1A> <primary order config i.e. colhub> <secondary order config i.e. greek> <src-primary config> <BE-FE c
+onfig>"
         echo "Note: configs must be the alignment reporting configs that check use at least TWO hubs with reference usually colhub and another hub i.e SRH or airbus etc"
         exit
 fi
@@ -16,6 +18,7 @@ prod_string=$2
 primary=$3
 secondary=$4
 sourceTOprimary=$5
+be_to_fe=$6
 
 script_loc="/usr/local/srh_install//sentinel/python/Find_Sentinel_Data.py"
 
@@ -32,7 +35,7 @@ do
         echo "Report for ${days_ago} (${i} days ago):"
 
         cnt=1
-        for j in "${primary}" "${secondary}" "${sourceTOprimary}" ;do
+        for j in "${primary}" "${secondary}" "${sourceTOprimary}" "${be_to_fe}" ;do
 
                 #get some summary info so can see which hubs are synchronising
                 which_hubs=`grep "target:" $j | awk '{print $2}' | tr '\n' ' ' | awk '{print $1" => "$2}'`
@@ -49,6 +52,9 @@ do
                 elif [ $cnt -eq 3 ]
                 then
                         msg="SOURCE-REFERENCE"
+                elif [ $cnt -eq 4 ]
+                then
+                        msg="BE-FE"
                 fi
 
                 echo "${msg} (${which_hubs}) product: ${prod_string}  ${aligned}%"
