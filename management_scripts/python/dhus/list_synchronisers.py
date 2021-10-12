@@ -90,6 +90,11 @@ def main(hub_config, email):
 
         if warning_flag:
 
+            hub, user, pw = get_hub_creds(hub_config)
+            del user, pw
+            from urllib.parse import urlparse
+            hubname = urlparse(hub).netloc
+
             if ',' in email:
                 recipients = email.split(',')
 
@@ -101,7 +106,7 @@ def main(hub_config, email):
 
                 for recipient in recipients:
                     msg = MIMEText(report)
-                    msg['Subject'] = 'Relay Hub Publication delay Synchroniser ALERT!"'
+                    msg['Subject'] = f'Relay Hub ({hubname}) Publication delay Synchroniser ALERT!"'
                     msg['From'] = recipient
                     msg['To'] = recipient
 
