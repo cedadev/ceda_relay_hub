@@ -10,7 +10,7 @@ import configparser
 
 from dhus_odata_api import *
 
-def label(params_file, filter= None, src_hub = None, loc = None):
+def label(params_file, src_hub = None,  filter= None, loc = None):
     '''
     Method to generate a synchroniser or evictor label according to ceda convention
     :return:
@@ -40,7 +40,7 @@ def label(params_file, filter= None, src_hub = None, loc = None):
     #NOTE: just return label base for now as the dt can be added in the sync generator
     return label_base
 
-def create_synchroniser(sync_template, params, src_hub, src_uname, src_password,  lastcreationdate, label_base, geofilter=None, existing_synchronisers = None, filter = None):
+def create_synchroniser(sync_template, params, src_hub, src_uname, src_password,  lastcreationdate, geofilter=None, existing_synchronisers = None, filter = None):
     '''
     Method to put together the various bits and create the relevant synchroniser.  Will append a label tag if needed
     :param sync_template:
@@ -49,15 +49,28 @@ def create_synchroniser(sync_template, params, src_hub, src_uname, src_password,
     :return:
     '''
 
+    filter_name = ''
+
     for line in params:
         hook = line.split("=")[0]
         value = line.split("=")[1]
+
+        #pull out filter for label name
+        if filter is None:
+            if 'D_FILTERPARAM' in hook:
+                filter_name = value.replace("startswith(Name,'","").replace("')","") #this is the convention if using a sync template file
+
+        else:
+            filter_name = filter
 
         #over ride filter parameter
         if 'D_FILTERPARAM' in hook and filter:
             sync_template = sync_template.replace('D_FILTERPARAM', f"startswith(Name,'{filter}')")
 
         sync_template = sync_template.replace(hook, value)
+
+    # work out label base
+    label_base = label('params_file', src_hub=  src_hub, filter = filter_name, loc=None)
 
     label_tag = f"{label_base}_{datetime.datetime.now().strftime('%d%m%YT%H%M%S')}"
 
@@ -183,11 +196,7 @@ def main(params_file, this_hub_creds, source_hub_creds, lastcreationdate, bboxes
     existing_synchronisers = None
     if areas is None:
         #No geographic areas, assume global extent
-
-        # work out label
-        label_base = label(params_file, src_hub, filter_param, loc=None)
-
-        sync_template, cont = create_synchroniser(sync_template, params, src_hub, src_uname, src_password, lastcreationdate, label_base, existing_synchronisers = existing_synchronisers, filter = filter_param)
+        sync_template, cont = create_synchroniser(sync_template, params, src_hub, src_uname, src_password, lastcreationdate, existing_synchronisers = existing_synchronisers, filter = filter_param)
 
         #sys.exit()
 
@@ -206,10 +215,7 @@ def main(params_file, this_hub_creds, source_hub_creds, lastcreationdate, bboxes
     else:
         for bbox in areas.keys():
 
-            # work out label
-            label_base = label(params_file, src_hub, filter_param, loc = bbox)
-
-            sync_template, cont = create_synchroniser(sync_template, params, src_hub, src_password, lastcreationdate, label_base, geofilter=areas[bbox], \
+            sync_template, cont = create_synchroniser(sync_template, params, src_hub, src_password, lastcreationdate, geofilter=areas[bbox], \
                                 existing_synchronisers = existing_synchronisers)
 
 
