@@ -1,7 +1,7 @@
 from operator import eq
 
 __author__ = 'sjdd53'
-import sys, os
+import sys, os, re
 
 sys.path.append("..")
 
@@ -547,7 +547,35 @@ def log_filter(logfile, filters, butnot=None):
         return pre_filtered_text
 
 
-def download_report(logfiles):
+def download_report_success(logfiles):
+    '''
+    Wrap download report for failed downloads by user
+    :param logfiles:
+    :return:
+    '''
+    filter_list= ["download by user","completed"]
+
+    title  ="\n************************ User Download Overview: SUCCESSFUL downloads ****************************\n"
+
+    report = download_report(logfiles, filter_list, title)
+
+    return report
+
+def download_report_fail(logfiles):
+    '''
+        Wrap download report for successful downloads by user
+        :param logfiles:
+        :return:
+        '''
+    filter_list = ["download by user", "failed"]
+
+    title = "\n************************ User Download Overview: FAILED downloads ****************************\n"
+
+    report = download_report(logfiles, filter_list, title)
+
+    return report
+
+def download_report(logfiles, filter_list, title):
     '''
     Method to generate overview report on number of downloads per user in log files
 
@@ -568,7 +596,7 @@ def download_report(logfiles):
             raise Exception("ERROR: Unable to open logile: %s (%s)" %(logfilename, ex))
 
         try:
-            filtered_log = log_filter(log, ["download by user","completed"]) # this is the hook we're looking for.
+            filtered_log = log_filter(log, filter_list) # this is the hook we're looking for.
 
         except Exception as ex:
             raise Exception( "ERROR: Unable to open logfile: %s (%s)" %(logfilename, ex))
@@ -643,9 +671,10 @@ def download_report(logfiles):
 
             for product in per_product_type:
             #print product['size']
-                #calculate gross and individual product size
-                per_product_volume += float(product['size'])
-                user_total += float(product['size'])
+                #calculate gross and individual product size - only for successful downloads (ignore fails)
+                if product['size'] is not None:
+                    per_product_volume += float(product['size'])
+                    user_total += float(product['size'])
                 prod_cnt += 1
 
             download_products_volume_user[product_type] = per_product_volume
@@ -687,7 +716,7 @@ def download_report(logfiles):
             raise Exception( "ERROR: Unable to summarise transfer rates from log: %s (%s)" %(logfilename, ex))
 
 
-    report += "\n************************ User Download Overview ****************************\n"
+    report += title
 
     total_download_secs = 0
     for user in download_volume.keys():
@@ -719,6 +748,7 @@ def download_report(logfiles):
                                                   gb,tb)
 
     report += "\nTotal number of users active: %s" %len(download_volume.keys())
+    report +=f"\nTotal number of products: {sum([len(download_products[i]) for i in download_products.keys()])}"
     report += "\nTotal download duration (s): %s (%.2f hrs)\n\n" %(total_download_secs,total_download_secs/3600)
 
     return report
@@ -735,6 +765,9 @@ def download_report_details(line):
 
     entry = deepcopy(SYNC_ENTRY_LINE_TEMPLATE)
 
+    #need to remember if this is a successful or failed download
+    failed_entry = False
+
     try:
         entry_time_str = linesplt[0].split('][')[-1] + 'T' + linesplt[1].split('][')[0]
 
@@ -745,10 +778,9 @@ def download_report_details(line):
 
     try:
         entry['user'] = line.split("download by user")[1].split(" ")[1].replace("'","").replace('"','')
-        entry['download_time'] = line.split("download by user")[1].split(" ")[4].replace('ms','')
 
     except Exception as ex:
-        raise Exception("ERROR: cannot parse details (%s)" %ex)
+        raise Exception("ERROR: cannot parse USER details (%s)" %ex)
 
     try:
         sentinel_product = Sentinel_Product(linesplt[5].replace("(","").replace(")",""))
@@ -760,19 +792,49 @@ def download_report_details(line):
     except Exception as ex:
         raise Exception( "ERROR: Unable to convert product sensing date! (%s)" %ex)
 
-    #check we're getting a number for the size
+    #check we're getting a number for the size - failed downloads have different structure to successful so need to work out which is which here
     try:
-        entry['size'] = float(line.split("download by user")[1].split(" ")[6])
+
+        if "failed at" in line:
+            failed_entry = True
+
+            val = line.split("failed at")[1].split(" ")[1].split("/")[1]
+        else:
+             val = line.split("download by user")[1].split(" ")[6]
+
+        #had line been mangled by the dhus i.e. with new line starting in the parsed value -
+        #i.e. 2.7.8-osf][2021-11-15 02:07:44,195][INFO ] Product '6ab93dfb-562c-4b6e-a7d3-e7df6d03fb3a' (S1A_IW_SLC__1SDV_20211105T022118_20211105T022145_040430_04CB0D_9C67)
+        # download by user 'collaborative_uk_ops' failed at 708050944/448684538[2.7.8-osf][2021-11-15 02:07:47,257][INFO ] Product '0fc4...
+
+        if not re.search('\[', val):
+            entry['size'] = float(val)
+
+        else:
+            raise Line_Error("Likely mangled logline")
+
+    except Line_Error as ex:
+        print (f"Warning: {ex}")
 
     except Exception as ex:
         raise Exception ("ERROR: Cannot convert size to number! (%s)" %ex)
 
-    #calculate download speed (MBs)
-    try:
-        entry['transfer_rate'] = calculate_transfer_rate(entry['size'],entry['download_time'])
+    if not failed_entry:
+        try:
+            entry['download_time'] = line.split("download by user")[1].split(" ")[4].replace('ms', '')
 
-    except Exception as ex:
-        raise Exception ("ERROR: %s" %ex)
+        except Exception as ex:
+            raise Exception("ERROR: cannot parse DOWNLOAD_TIME details (%s)" % ex)
+
+        #calculate download speed (MBs)
+        try:
+            entry['transfer_rate'] = calculate_transfer_rate(entry['size'],entry['download_time'])
+
+        except Exception as ex:
+            raise Exception ("ERROR: %s" %ex)
+
+    else:
+        entry['download_time'] = 1
+        entry['transfer_rate'] = 1
 
     return entry
 
@@ -1147,10 +1209,11 @@ if __name__ == '__main__':
 
        final_report += report
 
-       #downloads
-       report = download_report(logs)
+       #downloads - success
+       final_report += download_report_success(logs)
 
-       final_report += report
+       # downloads - success
+       final_report +=  download_report_fail(logs)
 
        #evicted products
        report, products_evicted = eviction_report(logs, write_products= evicted_product_list)

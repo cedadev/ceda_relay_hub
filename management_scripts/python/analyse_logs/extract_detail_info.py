@@ -58,7 +58,8 @@ def get_successful_downloads(lines):
     :return:
     '''
 
-    successful_syncs, bad_cnt = analyse_log(lines, ['Products(', 'successfully downloaded', '.zip'])
+    #successful_syncs, bad_cnt = analyse_log(lines, ['Products(', 'successfully downloaded', '.zip'])
+    successful_syncs, bad_cnt = analyse_log(lines, ['Products(', 'successfully downloaded'])
 
     return successful_syncs, bad_cnt
 
@@ -76,7 +77,7 @@ def analyse_log(lines, phrases):
     cnt = 0
     bad_cnt = 0
     for line in lines:
-        #if 'Products(' in line and 'successfully downloaded' in line and '.zip' in line:
+        #if 'Products(' in line and 'successfully downloaded' iS[1-5][A-P].[\.nc,\.zip]n line and '.zip' in line:
 
         #Are ALL the phrases requested present in the current line?
         phrases_present = [i in line for i in phrases]
@@ -88,7 +89,7 @@ def analyse_log(lines, phrases):
         if line_match:
             try:
                 uid = re.findall("'([a-zA-Z0-9-]*)'", line)[0]
-                product_name = re.findall("S[1-3][A-B].*\.zip", line)[0]
+                product_name = re.findall("'S[1-5][A-P].*[\.nc,\.zip]'", line)[0].replace('\'','')
 
                 #print (product_name)
 
