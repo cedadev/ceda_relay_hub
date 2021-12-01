@@ -21,7 +21,9 @@ import random
 import datetime
 
 from dhus.get_product_details import get_product_details, report_line, average_delay_hours, analyse_delay, get_delay, UIDnotOnHubError
-from analyse_logs.extract_detail_info import get_successful_downloads
+from analyse_logs.extract_detail_info import get_successful_downloads, get_date_from_logline
+from analyse_logs.ceda_dhus_log_summary import find_log_files
+
 #from dhus.synchroniser import get_hub_creds
 from dhus_odata_api import *
 
@@ -111,6 +113,188 @@ def choose_random_uid(all_available_ids, sample_size):
 
     return uids
 
+
+def generate_report(source_configs, local_hub_config, verbose, successful_syncs, sample_number, report_format, line, log_date):
+    # group by hub and product- if using primary UID's from log file method, there may be multiple source hubs
+    uids_by_product_type = {}
+    for source in source_configs.keys():
+
+        source_hub_config = source_configs[source]
+
+        # slice uid list of retrieved data products by product type
+        uids_by_product = {}
+        for product in successful_syncs[source]['products']:
+            uid_list = []
+            for scene in [successful_syncs[source]['uids'][i] for i in successful_syncs[source]['uids']]:
+                if scene:
+                    if product in scene:
+                        for ascene in successful_syncs[source]['uids'].keys():
+                            if successful_syncs[source]['uids'][ascene] == scene:
+                                uid_list.append(ascene)
+
+                else:
+                    uid_list.append()
+
+            uids_by_product[product] = uid_list
+
+        uids_by_product_type[source] = uids_by_product
+
+    # Now that uids are grouped by product type and source hub, go and get the actual details from both hubs
+    delays_by_product_type = {}
+    problems_by_product_type = defaultdict(dict)
+
+    for source in uids_by_product_type:
+
+        random_uids_by_product = {}
+
+        for product in uids_by_product_type[source]:
+
+            if verbose:
+                print(f"Assessing delay for {source} {product}")
+
+            # uids = uids_by_product_type[source][product]
+
+            delays = {}
+
+            if not sample_number:
+                # use ALL products identified
+                uids = uids_by_product_type[source][product]
+
+            else:
+                # use random selection based on sample number from the set of uid's identified
+                uids = choose_random_uid(uids_by_product_type[source][product], sample_number)
+
+            dcnt = 0
+            # previous_selections = []
+
+            for uid in uids:
+
+                # get pub time on source hub
+                try:
+                    src_hub_domain, src_creation_date, src_ingestion_date = get_product_details(source_hub_config, uid)
+
+                    loc_hub_domain, loc_creation_date, loc_ingestion_date = get_product_details(local_hub_config, uid)
+
+                    # todo need to make sure that the delays are properly indexed by source and prodduct and to make sure that the correct source config is picked up.
+                    delays[uid] = get_delay(loc_creation_date, src_creation_date)
+
+                    dcnt += 1
+
+                except UIDnotOnHubError as ex:
+                    # print (f"here {ex}")
+                    # Product removed or not actually on hub anymore - record it in similar data structure
+                    # if len(problems_by_product_type[source].keys()) == 0:
+                    if product not in problems_by_product_type[source].keys():
+                        problems_by_product_type[source].update({product: [uid]})
+
+                    else:
+                        problems_by_product_type[source][product].append(uid)
+
+                except Exception as ex:
+                    # todo: how to report/catch this?
+                    print(f"here normal excp {ex}")
+
+            # print (f"count: {dcnt}")
+
+            # sort the completed set of datetime samples for this source/product combination
+            # https://stackoverflow.com/questions/20944483/python-3-sort-a-dict-by-its-values
+            sorted_uids = {}
+            for p in sorted(delays, key=delays.get):
+                sorted_uids[p] = delays[p]
+
+            random_uids_by_product[product] = sorted_uids
+
+        delays_by_product_type[source] = random_uids_by_product
+
+    print("\n")
+
+    # output more detailed info if asked to.
+    if line:
+        for source in delays_by_product_type.keys():
+            print(f"********** Report for source: {source} **********")
+
+            for product in delays_by_product_type[source].keys():
+                print(f"Report for data product: {product}")
+                cnt = 1
+                if sample_number:
+                    print(f"(Sampling {sample_number} of {len(uids_by_product_type[source][product])})")
+
+                for sorted_dt_uid in delays_by_product_type[source][product].keys():
+                    days, hrs, mins, secs = analyse_delay(delays_by_product_type[source][product][sorted_dt_uid])
+                    report_line(sorted_dt_uid, src_hub_domain, loc_hub_domain, days, hrs, mins, secs, linenum=cnt)
+                    cnt += 1
+                print("\n")
+
+            # print ("\n")
+
+    # average needs to be based on the sampled set - whether full or a random selection
+
+    # average per product....
+    for source in delays_by_product_type.keys():
+        if verbose:
+            print(f"********** Publication delay for source: {source} **********")
+
+        for product in delays_by_product_type[source].keys():
+            if verbose:
+                print(f"Product {product}")
+            if len(delays_by_product_type[source][product]) != 0:
+                avg_hrs, avg_mins = average_delay_hours([delays_by_product_type[source][product][i] for i in
+                                                         delays_by_product_type[source][product].keys()])
+
+                if verbose:
+                    print(f"Average publication delay: {avg_hrs} hrs {avg_mins} mins for\
+                     {len(delays_by_product_type[source][product])} records from  source: {source} to: {loc_hub_domain}")
+
+                # any errors?
+                try:
+                    if verbose:
+                        if len(problems_by_product_type[product][source]) != 0:
+                            print(
+                                f"Found {len(problems_by_product_type[product][source])} problems for {source}/{product}.  (Likely removed from source hub)")
+                except:
+                    # only have these keys etc if errors actually reported on..
+                    pass
+
+            else:
+                if verbose:
+                    print(f"Could not calculate publication delay as no products found!")
+            if verbose:
+                print("\n")
+
+    # average per source....
+    if verbose:
+        print(f"********** Publication delay report BY source **********")
+
+    delays_by_source = {}
+
+    for source in delays_by_product_type.keys():
+
+        filtered_uids_by_source = {}
+
+        for uid in [j for j in [delays_by_product_type[source][i] for i in delays_by_product_type[source]]]:
+            # filtered_uids_by_source.extend(uid.keys())
+            # merge dicts - see https://stackoverflow.com/questions/38987/how-do-i-merge-two-dictionaries-in-a-single-expression-taking-union-of-dictiona
+            filtered_uids_by_source = {**filtered_uids_by_source, **uid}
+
+        avg_hrs, avg_mins = average_delay_hours([i for i in filtered_uids_by_source.values()])
+
+        # print(f"Average publication delay: {avg_hrs} hrs {avg_mins} mins for\
+        # {len(filtered_uids_by_source.keys())} records from  source: {source} to: {loc_hub_domain}")
+
+        if report_format:
+            delays_by_source[source] = (f"{str(avg_hrs).zfill(2)}:{str(avg_mins).zfill(2)}")
+            # print (f"{log_date},{str(avg_hrs).zfill(2)}:{str(avg_mins).zfill(2)}")
+
+        else:
+            print(
+                f"Date: {log_date} Source: {source} to: {loc_hub_domain}: {str(avg_hrs).zfill(2)}:{str(avg_mins).zfill(2)} (HH:MM)")
+
+    columns = str([i for i in delays_by_source.keys()]).replace('[', '').replace(']', '').replace("'", "")
+    times = str([delays_by_source[i] for i in delays_by_source.keys()]).replace('[', '').replace(']', '').replace("'",
+                                                                                                                  "")
+    return columns, times
+
+
 #todo: how does average delay change based on increasing sample size?  What sample size gives a reasonable idea of actual delay?
 '''
 TODO: how does a
@@ -127,16 +311,50 @@ TODO: how does a
 @click.option('-n', '--sample-number', 'sample_number', type=int, help='Just sample N UIDs rather than retrieve info on ALL in log  Use TODO.py to work out number')
 @click.option('-l', '--log-file', 'hub_log_file', type=str, help='DHuS logfile to extract successful sychronised UIDS from to assess latency', \
               cls=MutuallyExclusiveOption, mutually_exclusive=["id", "source_hub_config"])
+@click.option('-D', '--log-file-dir', 'hub_log_dir', type=str, help='DHuS logfile directory for bulk reports', \
+              cls=MutuallyExclusiveOption, mutually_exclusive=["id", "source_hub_config", "hub_log_file"])
 @click.option('--line', is_flag=True, help="Will print out in ASCENDING ingestion time order the list of uid's and associated publication delay")
-def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_file, line, id, sample_number):
+@click.option('-v', '--verbose', 'verbose', is_flag=True, help='Print extra output')
+@click.option('-R', '--reporting-format', 'report_format', is_flag=True, help='ONLY Output a set of csv formatted lines for use with wrapper scripts to generate bulk info for reporting')
+def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_file, line, id, verbose, sample_number, report_format, hub_log_dir):
 
     tstamp=datetime.datetime.now().strftime("%d-%m-%yT%H:%M:%S")
 
-    print (f"\n\nReport timestamp: {tstamp}\n\n")
+    if verbose:
+        print (f"\n\nReport timestamp: {tstamp}\n\n")
 
     if hub_log_file:
+        log_files = [hub_log_file]
+
+    elif  hub_log_dir:
+        log_files = find_log_files(hub_log_dir, '.log')
+
+    elif id:
+        #todo: Test that ID option still works
+        # for consistency with primary -from-log method.
+        hub, u, pwd = get_hub_creds(source_hub_config)
+        source_key = hub.replace('https://', '').replace('http://', '').split('/')[0]
+        source_configs = {source_key: source_hub_config}
+
+        # todo: update so consistent data structure sourced from definition in extract_detail_info
+        # should be consistent with data structure in extract_detail_info.get_successful_downloads)
+        successful_syncs = {source_key: {'uids': {id: None}}}
+
+    else:
+        raise Exception ("Please choose either log file or log file dir options")
+
+    #get it to loop through logs of -D option.
+    for hub_log_file in log_files:
+
         with open(hub_log_file) as r:
             lines = [i.rstrip() for i in r.readlines()]
+
+        #get date from logfile.  As this tool should be used on logs covering only 1 day (as per dhus convention/ceda config) check that this is so...
+        if get_date_from_logline(lines[0]) != get_date_from_logline(lines[-1]):
+            raise Exception ("Log appears to cover more than one day!  Please supply logs of 1 per day as per convention")
+
+        else:
+            log_date = get_date_from_logline(lines[0])
 
         # get successful synchroniser structure
         successful_syncs, bad_cnt = get_successful_downloads(lines)
@@ -144,173 +362,13 @@ def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_fil
         #test = [i for i in successful_syncs['colhub.copernicus.eu']['uids'].keys()][0:9]
         source_configs = build_config_map(source_hub_config_dir, successful_syncs)
 
-    if id:
+        #generate report
+        columns, times = generate_report(source_configs, local_hub_config, verbose, successful_syncs, sample_number, report_format, line, log_date)
 
-        #for consistency with primary -from-log method.
-        hub, u, pwd = get_hub_creds(source_hub_config)
-        source_key = hub.replace('https://', '').replace('http://','').split('/')[0]
-        source_configs = {source_key:source_hub_config}
+    if report_format:
+        print(f"date, {columns}")
+        print(f"{log_date}, {times}")
 
-        #todo: update so consistent data structure sourced from definition in extract_detail_info
-        #should be consistent with data structure in extract_detail_info.get_successful_downloads)
-        successful_syncs = {source_key:{'uids':{id:None}}}
-
-
-    #group by hub and product- if using primary UID's from log file method, there may be multiple source hubs
-    uids_by_product_type = {}
-    for source in source_configs.keys():
-
-        source_hub_config = source_configs[source]
-
-        #slice uid list of retrieved data products by product type
-        uids_by_product = {}
-        for product in successful_syncs[source]['products']:
-            uid_list = []
-            for scene in [successful_syncs[source]['uids'][i] for i in successful_syncs[source]['uids']]:
-                if scene:
-                    if product in scene:
-                        for ascene in successful_syncs[source]['uids'].keys():
-                            if successful_syncs[source]['uids'][ascene] == scene:
-                                uid_list.append(ascene)
-
-                else:
-                    uid_list.append()
-
-            uids_by_product[product]  = uid_list
-
-        uids_by_product_type[source] = uids_by_product
-
-    #Now that uids are grouped by product type and source hub, go and get the actual details from both hubs
-    delays_by_product_type = {}
-    problems_by_product_type = defaultdict(dict)
-
-    for source in uids_by_product_type:
-
-        random_uids_by_product = {}
-
-        for product in uids_by_product_type[source]:
-
-            print(f"Assessing delay for {source} {product}")
-
-            #uids = uids_by_product_type[source][product]
-
-            delays = {}
-
-            if not sample_number:
-                #use ALL products identified
-                uids = uids_by_product_type[source][product]
-
-            else:
-                #use random selection based on sample number from the set of uid's identified
-                uids = choose_random_uid(uids_by_product_type[source][product], sample_number)
-
-            dcnt=0
-            #previous_selections = []
-
-            for uid in uids:
-
-                #get pub time on source hub
-                try:
-                    src_hub_domain, src_creation_date, src_ingestion_date = get_product_details(source_hub_config, uid)
-
-                    loc_hub_domain, loc_creation_date, loc_ingestion_date = get_product_details(local_hub_config, uid)
-
-                    #todo need to make sure that the delays are properly indexed by source and prodduct and to make sure that the correct source config is picked up.
-                    delays[uid] = get_delay(loc_creation_date, src_creation_date)
-
-                    dcnt += 1
-
-                except UIDnotOnHubError as ex:
-                    #print (f"here {ex}")
-                    #Product removed or not actually on hub anymore - record it in similar data structure
-                    #if len(problems_by_product_type[source].keys()) == 0:
-                    if product not in problems_by_product_type[source].keys():
-                        problems_by_product_type[source].update({product:[uid]})
-
-                    else:
-                        problems_by_product_type[source][product].append(uid)
-
-                except Exception as ex:
-                    #todo: how to report/catch this?
-                    print (f"here normal excp {ex}")
-
-            #print (f"count: {dcnt}")
-
-            #sort the completed set of datetime samples for this source/product combination
-            #https://stackoverflow.com/questions/20944483/python-3-sort-a-dict-by-its-values
-            sorted_uids = {}
-            for p in sorted(delays, key=delays.get):
-                sorted_uids[p] = delays[p]
-
-            random_uids_by_product[product] = sorted_uids
-
-        delays_by_product_type[source] = random_uids_by_product
-
-    print ("\n")
-
-    #output more detailed info if asked to.
-    if line:
-        for source in delays_by_product_type.keys():
-            print (f"********** Report for source: {source} **********")
-
-            for product in delays_by_product_type[source].keys():
-                print (f"Report for data product: {product}")
-                cnt = 1
-                if sample_number:
-                    print (f"(Sampling {sample_number} of {len(uids_by_product_type[source][product])})")
-
-                for sorted_dt_uid in delays_by_product_type[source][product].keys():
-                    days, hrs, mins, secs = analyse_delay(delays_by_product_type[source][product][sorted_dt_uid])
-                    report_line(sorted_dt_uid, src_hub_domain, loc_hub_domain, days, hrs, mins, secs, linenum=cnt)
-                    cnt += 1
-                print("\n")
-
-            #print ("\n")
-
-    #average needs to be based on the sampled set - whether full or a random selection
-
-    #average per product....
-    for source in delays_by_product_type.keys():
-        print(f"********** Publication delay for source: {source} **********")
-
-        for product in delays_by_product_type[source].keys():
-            print(f"Product {product}")
-            if len(delays_by_product_type[source][product]) != 0:
-                avg_hrs, avg_mins = average_delay_hours([delays_by_product_type[source][product][i] for i in delays_by_product_type[source][product].keys()])
-
-                print (f"Average publication delay: {avg_hrs} hrs {avg_mins} mins for\
-                 {len(delays_by_product_type[source][product])} records from  source: {source} to: {loc_hub_domain}")
-
-                #any errors?
-                try:
-                    if len(problems_by_product_type[product][source]) != 0:
-                        print (f"Found {len(problems_by_product_type[product][source])} problems for {source}/{product}.  (Likely removed from source hub)")
-                except:
-                    #only have these keys etc if errors actually reported on..
-                    pass
-
-            else:
-                print (f"Could not calculate publication delay as no products found!")
-            print ("\n")
-
-    # average per source....
-    print(f"********** Publication delay report BY source **********")
-
-    for source in delays_by_product_type.keys():
-
-        filtered_uids_by_source = {}
-
-        for uid in [j for j in [delays_by_product_type[source][i] for i in delays_by_product_type[source]]]:
-            #filtered_uids_by_source.extend(uid.keys())
-            #merge dicts - see https://stackoverflow.com/questions/38987/how-do-i-merge-two-dictionaries-in-a-single-expression-taking-union-of-dictiona
-            filtered_uids_by_source = {**filtered_uids_by_source, **uid}
-
-        avg_hrs, avg_mins = average_delay_hours([i for i in filtered_uids_by_source.values()])
-
-        #print(f"Average publication delay: {avg_hrs} hrs {avg_mins} mins for\
-                             #{len(filtered_uids_by_source.keys())} records from  source: {source} to: {loc_hub_domain}")
-
-        print(f"Source: {source} to: {loc_hub_domain}: {str(avg_hrs).zfill(2)}:{str(avg_mins).zfill(2)} (HH:MM)")
 
 if __name__ == '__main__':
     main()
