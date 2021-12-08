@@ -276,23 +276,50 @@ def generate_report(source_configs, local_hub_config, verbose, successful_syncs,
             # merge dicts - see https://stackoverflow.com/questions/38987/how-do-i-merge-two-dictionaries-in-a-single-expression-taking-union-of-dictiona
             filtered_uids_by_source = {**filtered_uids_by_source, **uid}
 
-        avg_hrs, avg_mins = average_delay_hours([i for i in filtered_uids_by_source.values()])
+        if len(filtered_uids_by_source.keys()) != 0:
+            avg_hrs, avg_mins = average_delay_hours([i for i in filtered_uids_by_source.values()])
 
-        # print(f"Average publication delay: {avg_hrs} hrs {avg_mins} mins for\
-        # {len(filtered_uids_by_source.keys())} records from  source: {source} to: {loc_hub_domain}")
+            # print(f"Average publication delay: {avg_hrs} hrs {avg_mins} mins for\
+            # {len(filtered_uids_by_source.keys())} records from  source: {source} to: {loc_hub_domain}")
 
-        if report_format:
-            delays_by_source[source] = (f"{str(avg_hrs).zfill(2)}:{str(avg_mins).zfill(2)}")
-            # print (f"{log_date},{str(avg_hrs).zfill(2)}:{str(avg_mins).zfill(2)}")
+            if report_format:
+                delays_by_source[source] = (f"{str(avg_hrs).zfill(2)}:{str(avg_mins).zfill(2)}")
+                # print (f"{log_date},{str(avg_hrs).zfill(2)}:{str(avg_mins).zfill(2)}")
+
+            else:
+                print(
+                    f"Date: {log_date} Source: {source} to: {loc_hub_domain}: {str(avg_hrs).zfill(2)}:{str(avg_mins).zfill(2)} (HH:MM)")
 
         else:
-            print(
-                f"Date: {log_date} Source: {source} to: {loc_hub_domain}: {str(avg_hrs).zfill(2)}:{str(avg_mins).zfill(2)} (HH:MM)")
+            if report_format:
+                delays_by_source[source] = (f"None")
 
-    columns = str([i for i in delays_by_source.keys()]).replace('[', '').replace(']', '').replace("'", "")
-    times = str([delays_by_source[i] for i in delays_by_source.keys()]).replace('[', '').replace(']', '').replace("'",
-                                                                                                                  "")
-    return columns, times
+            else:
+                print(
+                    f"Date: {log_date} Source: {source} to: {loc_hub_domain}: No data available (not on source hub")
+
+    return delays_by_source
+
+def merge_two_dicts(x, y): #https://stackoverflow.com/questions/38987/how-to-merge-two-dictionaries-in-a-single-expression
+    z = x.copy()   # start with x's keys and values
+    #z.update(y)    # modifies z with y's keys and values & returns None
+
+    #updates to work better with how this code works with lists as dict values
+    for k,v in list(y.items()):
+
+        if k not in z:
+            z[k] = v
+
+        else:
+            #deal with merge depending on what's in the value
+            if type(v) is list:
+                z[k] = sorted(list(set(v).union(set(z[k]))))
+
+            elif type(v) is str:
+                #just add it in
+                z[k] = v
+
+    return z
 
 
 #todo: how does average delay change based on increasing sample size?  What sample size gives a reasonable idea of actual delay?
@@ -327,6 +354,9 @@ def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_fil
         log_files = [hub_log_file]
 
     elif  hub_log_dir:
+        #todo make sure this is an exclusive option.
+        if not report_format:
+            print ("please only use this in report format mode")
         log_files = find_log_files(hub_log_dir, '.log')
 
     elif id:
@@ -344,6 +374,7 @@ def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_fil
         raise Exception ("Please choose either log file or log file dir options")
 
     #get it to loop through logs of -D option.
+    final_report = {}
     for hub_log_file in log_files:
 
         with open(hub_log_file) as r:
@@ -363,11 +394,24 @@ def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_fil
         source_configs = build_config_map(source_hub_config_dir, successful_syncs)
 
         #generate report
-        columns, times = generate_report(source_configs, local_hub_config, verbose, successful_syncs, sample_number, report_format, line, log_date)
+        delays_by_source = generate_report(source_configs, local_hub_config, verbose, successful_syncs, sample_number, report_format, line, log_date)
 
-    if report_format:
-        print(f"date, {columns}")
-        print(f"{log_date}, {times}")
+        #final_report = merge_two_dicts(final_report, delays_by_source)
+        final_report[log_date] = delays_by_source
+
+    #work out unique columns (producrs
+    columns = []
+    for h in [[j for j in final_report[i].keys()] for i in final_report.keys()]:
+        columns += h
+
+    columns = list(set(columns))
+    columns_str = str([i for i in columns]).replace('[', '').replace(']', '').replace("'", "")
+
+    print(f"date, {columns_str}")
+
+    for date in final_report.keys():
+        times = str([final_report[date][i] for i in final_report[date].keys()]).replace('[', '').replace(']', '').replace("'", "")
+        print(f"{date}, {times}")
 
 
 if __name__ == '__main__':

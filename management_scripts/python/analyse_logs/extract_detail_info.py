@@ -52,6 +52,11 @@ def get_date_distribution(successful_syncs):
     return prod_by_date
 
 
+def get_date_from_logline(line):
+    #extract date from dhus logline.  i.e. [2.7.8-osf][2021-11-19 00:00:00,002][INFO ] Scheduled eviction job started (EvictionJob.java:39 - DefaultQuartzScheduler_Worker-1)'
+    return str(re.findall("[0-9]{4}-[0-9]{2}-[0-9]{2}",str(re.findall("\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}\:[0-9]{2}\:[0-9]{2},[0-9]{3}\]", line)[0]))[0])
+
+
 def get_successful_downloads(lines):
     '''
     Method to wrap the log analyser using known good values to hook into the log

@@ -33,6 +33,23 @@ EVICT_ENTRY_LINE_TEMPLATE = {'entry_time':None, 'log_level':None, 'product':None
 # successfully synchronized from https://colhub.esa.int/dhus/odata/v1 (ODataProductSynchronizer.java:694 - SyncExecutor)
 
 
+def find_log_files(logfiledir, extension):
+
+    logs = []
+
+    if not os.path.isdir(logfiledir):
+        raise Exception (f"Not a directory: {logfiledir}")
+
+    for (logfilepath, logfiledir, logfilename) in os.walk(logfiledir):
+        for filename in logfilename:
+
+            full_filename = os.path.join(logfilepath, filename)
+
+            if os.path.splitext(full_filename)[-1] == extension:
+                logs.append(full_filename)
+
+    return logs
+
 def set_options(parser):
     '''
     Method to properly parse args in the linux style
@@ -1170,18 +1187,7 @@ if __name__ == '__main__':
 
     #one or many logs?
     if options.logfiledir is not None:
-
-        logs = []
-
-        #loop through log files and generate one report from it
-        for (logfilepath, logfiledir, logfilename) in os.walk( options.logfiledir):
-            for filename in logfilename:
-
-                full_filename = os.path.join(logfilepath,filename)
-
-                if options.extension:
-                    if os.path.splitext(full_filename)[-1] == options.extension:
-                        logs.append(full_filename)
+        logs = find_log_files(options.logfiledir, options.extension)
 
     #just point at specific file
     elif options.logfilename is not None:
