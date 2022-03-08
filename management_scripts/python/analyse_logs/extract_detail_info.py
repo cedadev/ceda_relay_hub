@@ -1,3 +1,12 @@
+"""Extracting useful information from a DHuS Log
+"""
+__author__ = "@SteveDonegan"
+__date__ = "08/03/22"
+__copyright__ = "(C) 2015 Science and Technology Facilities Council"
+__license__ = "BSD - see LICENSE file in top-level directory"
+__contact__ = "steve.donegan@stfc.ac.uk"
+__revision__ = '$Id$'
+
 import os, sys, re, urllib
 
 sys.path.append(".")
@@ -171,6 +180,9 @@ def analyse_log_successful(lines):
                 product = product_name[0:10]
             else:
                 product = product_name[0:12]
+
+            #lop off any trailing underscores
+            product = product.strip('_')
 
             # todo: for some reason url parse failed on pycharm run but NOT debug...? replaced with clunkier one liner.  And http?
             # hub = urllib.parse.urlparse(re.findall('https.*/Products', line)[0]).netloc

@@ -119,6 +119,7 @@ def daily_report(days, hrs, mins, secs):
     return (f"{str(days).zfill(2)} (days), {str(hrs).zfill(2)}:{str(mins).zfill(2)}:{str(secs).zfill(2)} (HH:MM:SS)")
 
 def report_line(uid, src_hub_domain, loc_hub_domain, days, hrs, mins, secs, linenum=None):
+
     delay_str = daily_report(days, hrs, mins, secs)
     if not linenum:
         print (
@@ -136,11 +137,13 @@ if __name__ == '__main__':
     uid = sys.argv[2]
 
     try:
-        hub_domain, publication_delay = get_product_details(hub_config, uid)
+        hub_domain, creation_date, ingestion_date = get_product_details(hub_config, uid)
+
+        publication_delay = get_delay(creation_date, ingestion_date)
 
         days, hrs, mins, secs = analyse_delay(publication_delay)
 
-        report_line(uid, hub_domain, days, hrs, mins, secs)
+        report_line(uid, hub_domain, 'N/A', days, hrs, mins, secs)
 
     except Exception as ex:
         print (ex)

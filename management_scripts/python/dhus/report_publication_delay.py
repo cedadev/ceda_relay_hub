@@ -7,6 +7,14 @@ grep  'successfully downloaded from' /srh/data/logs/dhus.log | awk '{print $12}'
  | sed -n "s/.*\(Products[(]'[0-9 a-z -].*'[)]\).*/\1/p" | sed 's/Products//g' | sed "s/[(,)']//g" | tr '/' '\t' | awk '{print $1}'
   | sort -u  > list.txt
 '''
+"""Extracting useful information from a DHuS Log and calculate Publication Delay for KPI reporting for CEDA Relay Hub
+"""
+__author__ = "@SteveDonegan"
+__date__ = "08/03/22"
+__copyright__ = "(C) 2015 Science and Technology Facilities Council"
+__license__ = "BSD - see LICENSE file in top-level directory"
+__contact__ = "steve.donegan@stfc.ac.uk"
+__revision__ = '$Id$'
 
 #PUBLICATION DELAY FOR INTERESTS OF CEDA SRH CAN BE DEFINED AS THE LAG BETWEEN THE CREATION DATE ON THE SOURCE HUB AND THE CREATION DATE ON THE LOCAL HUB
 
@@ -114,7 +122,7 @@ def choose_random_uid(all_available_ids, sample_size):
     return uids
 
 
-def generate_report(source_configs, local_hub_config, verbose, successful_syncs, sample_number, report_format, line, log_date):
+def generate_report(source_configs, local_hub_config, verbose, successful_syncs, sample_number, report_format, line, log_date, specific_uid):
     # group by hub and product- if using primary UID's from log file method, there may be multiple source hubs
     uids_by_product_type = {}
     for source in source_configs.keys():
@@ -173,7 +181,7 @@ def generate_report(source_configs, local_hub_config, verbose, successful_syncs,
                 try:
                     src_hub_domain, src_creation_date, src_ingestion_date = get_product_details(source_hub_config, uid)
 
-                    loc_hub_domain, loc_creation_date, loc_ingestion_date = get_product_details(local_hub_config, uid)
+                    loc_hub_domain, loc_creation_date, loc_ingestion_date  = get_product_details(local_hub_config, uid)
 
                     # todo need to make sure that the delays are properly indexed by source and prodduct and to make sure that the correct source config is picked up.
                     delays[uid] = get_delay(loc_creation_date, src_creation_date)
@@ -296,7 +304,7 @@ def generate_report(source_configs, local_hub_config, verbose, successful_syncs,
 
             else:
                 print(
-                    f"Date: {log_date} Source: {source} to: {loc_hub_domain}: No data available (not on source hub")
+                    f"Date: {log_date} Source: {source}: No data available (not on source hub")
 
     return delays_by_source
 
@@ -334,6 +342,7 @@ TODO: how does a
               cls=MutuallyExclusiveOption, mutually_exclusive=["source_hub_config_dir"])
 @click.option('-S', '--source-hub-configs-dir', 'source_hub_config_dir', type=str,  help='DIRECTORY with all SOURCE hub admin credentials', \
               cls=MutuallyExclusiveOption, mutually_exclusive=["source_hub_config"])
+@click.option('-U', '--specific-uid', 'specific_uid', type=str,  help='Specific uid to identify from log')
 @click.option('-i', '--id', 'id', type=str, help='Single UID to submit to hub to extract publication delay info on', cls=MutuallyExclusiveOption, mutually_exclusive=["hub_log_file"])
 @click.option('-n', '--sample-number', 'sample_number', type=int, help='Just sample N UIDs rather than retrieve info on ALL in log  Use TODO.py to work out number')
 @click.option('-l', '--log-file', 'hub_log_file', type=str, help='DHuS logfile to extract successful sychronised UIDS from to assess latency', \
@@ -343,7 +352,7 @@ TODO: how does a
 @click.option('--line', is_flag=True, help="Will print out in ASCENDING ingestion time order the list of uid's and associated publication delay")
 @click.option('-v', '--verbose', 'verbose', is_flag=True, help='Print extra output')
 @click.option('-R', '--reporting-format', 'report_format', is_flag=True, help='ONLY Output a set of csv formatted lines for use with wrapper scripts to generate bulk info for reporting')
-def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_file, line, id, verbose, sample_number, report_format, hub_log_dir):
+def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_file, line, id, verbose, sample_number, report_format, hub_log_dir, specific_uid):
 
     tstamp=datetime.datetime.now().strftime("%d-%m-%yT%H:%M:%S")
 
@@ -394,12 +403,13 @@ def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_fil
         source_configs = build_config_map(source_hub_config_dir, successful_syncs)
 
         #generate report
-        delays_by_source = generate_report(source_configs, local_hub_config, verbose, successful_syncs, sample_number, report_format, line, log_date)
+        delays_by_source = generate_report(source_configs, local_hub_config, verbose, successful_syncs, sample_number, report_format, line, log_date, specific_uid)
 
         #final_report = merge_two_dicts(final_report, delays_by_source)
         final_report[log_date] = delays_by_source
 
     #work out unique columns (producrs
+    '''
     columns = []
     for h in [[j for j in final_report[i].keys()] for i in final_report.keys()]:
         columns += h
@@ -412,7 +422,7 @@ def main(local_hub_config, source_hub_config, source_hub_config_dir, hub_log_fil
     for date in final_report.keys():
         times = str([final_report[date][i] for i in final_report[date].keys()]).replace('[', '').replace(']', '').replace("'", "")
         print(f"{date}, {times}")
-
+    '''
 
 if __name__ == '__main__':
     main()
