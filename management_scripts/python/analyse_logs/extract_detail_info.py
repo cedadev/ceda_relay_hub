@@ -17,7 +17,8 @@ from click import command, option, Option, UsageError
 from collections import defaultdict
 import numpy as np
 
-from analyse_logs.Sentinel import Sentinel_Product
+#from analyse_logs.Sentinel import Sentinel_Product
+from .Sentinel import Sentinel_Product
 
 '''
 Script to extract SUCCESSFULLY synchronised data from a hub log and index by source and unique ids.

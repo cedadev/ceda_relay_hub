@@ -7,6 +7,8 @@ with open(log, 'r') as f:
 
 print (f"{len(lines)}")
 
+print ("hello test")
+
 #build map of file - each run of the list_synchronisers.py is ended with a summary of synchronsiers, both running and pending listed ..
 run_map = {}
 line_count = 1

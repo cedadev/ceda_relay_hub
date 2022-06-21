@@ -9,7 +9,8 @@ from datetime import datetime
 from copy import deepcopy
 from optparse import OptionParser, OptionGroup
 
-from analyse_logs.Sentinel import Sentinel_Product
+#from analyse_logs.Sentinel import Sentinel_Product
+from .Sentinel import Sentinel_Product
 
 #from extract_detail_info import get_successful_downloads
 
@@ -210,7 +211,7 @@ def extract_synchronizer_details(line, start_date= None, end_date=None ):
         raise Exception("ERROR: cannot parse entry time (%s)" %ex)
 
     #successful synchronisation - how we parse the line depends on whether successful or not
-    #try:
+
     if SYNC_SUCCESS_TEXT_SNIPPET in line:
 
         entry['status'] = True
@@ -256,19 +257,7 @@ def extract_synchronizer_details(line, start_date= None, end_date=None ):
         except Exception as ex:
             raise Exception( "ERROR: Unable to convert product sensing date! (%s)" %ex)
 
-        '''
-        #work out product type to make slicing it this way easier
-        for product_type in SENTINEL_PRODUCTS:
-            if product_type in entry['product']:
-                entry['product_type'] = product_type
 
-        #check for new products not in SENTINEL_PRODUCTS..
-        if entry['product_type'] is None:
-            raise Exception ("ERROR: New product found (%s).  Please add type to SENTINEL_SENTINEL_PRODUCTS!!" %entry['product'])
-        '''
-    #else:
-        #Another synchroniser line ie Synchroniser "done message".  Can ignore these for this scripts purposes
-        #entry = None
 
     return entry
 
