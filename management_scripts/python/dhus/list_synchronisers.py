@@ -28,9 +28,9 @@ def delay_warning(hrs):
 @click.option('-e', '--email', 'email', type=str, help='if supplied will email report ONLY if thresholds exceeded and not output to STDOUT. separate multiple emails with a comma "," ')
 def main(hub_config, email):
 
-    #test line
-
     synchronisers = synchroniser_summary(get_synchronisers(hub_config))
+
+    print ('just checking vsc git....')
 
     report = ''
     cnt = 0
