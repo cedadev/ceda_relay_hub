@@ -1,10 +1,10 @@
 #Script to list sychronisers on a given SRH hub
 
-import os, sys
+import sys
 import datetime
 import click
 import smtplib
-from get_product_details import analyse_delay, daily_report
+from get_product_details import analyse_delay, daily_report, get_delay
 
 from dhus_odata_api import *
 
@@ -13,32 +13,24 @@ WARN_DELAY = 2 #hours  Setup warning if this exceeded
 SYNC_STATUS = ['RUNNING', 'PENDING', 'STOPPED'] #in order we want them appearing in the log
 
 #todo: do we need to send a warning if a synchroniser is stopped?  Yes? - long term should be deleted....
-def delay_warning(days, hrs, mins, secs):
+def delay_warning(hrs):
+    
     #Method to calculate what warning sent depending on values defined
     warning = None
-    if days >= 1:
-        warning = f"[WARNING! Publication delay {PUB_DELAY} hrs EXCEEDED!]"
-
-    elif days < 1 and hrs > PUB_DELAY:
-        warning = f"[WARNING! Publication delay {PUB_DELAY} hrs EXCEEDED!]"
-
-    elif hrs < PUB_DELAY and hrs > WARN_DELAY:
+    
+    if hrs < PUB_DELAY and hrs > WARN_DELAY:
         warning = f"[WARNING! Warning threshold exceeded {WARN_DELAY} (Publication delay {PUB_DELAY} hrs NOT exceeded!)]"
 
     return warning
 
 @click.command()
 @click.option('-c', '--hub-config', 'hub_config', type=str, required=True, help='Location of hub admin credos')
-@click.option('-e', '--email', 'email', type=str, help='if supplied will email report ONLY if thresholds exceeded and not output to STDOUT.  separate multiple emails with a comma "," ')
+@click.option('-e', '--email', 'email', type=str, help='if supplied will email report ONLY if thresholds exceeded and not output to STDOUT. separate multiple emails with a comma "," ')
 def main(hub_config, email):
 
-    try:
-        #Synchronizers
-        synchronisers = synchroniser_summary(get_synchronisers(hub_config))
+    #test line
 
-    except Exception as ex:
-        print (f"Could not list dhus for hub: {hub_config} ({ex})")
-        sys.exit()
+    synchronisers = synchroniser_summary(get_synchronisers(hub_config))
 
     report = ''
     cnt = 0
@@ -59,16 +51,16 @@ def main(hub_config, email):
 
                 lcd = synchronisers[sync]['lcd']
 
-                days, hrs, mins, secs = analyse_delay(datetime.datetime.now() - datetime.datetime.strptime(lcd, '%Y-%m-%dT%H:%M:%S.%f'))
+                hrs, mins, secs = analyse_delay(get_delay(datetime.datetime.now(), datetime.datetime.strptime(lcd, '%Y-%m-%dT%H:%M:%S.%f')))
 
                 #check for any warning and flag up if one encountered
-                warning_msg = delay_warning( days, hrs, mins, secs)
+                warning_msg = delay_warning(hrs)
 
                 if warning_msg:
                     warning_flag = True
 
                 #pretty print the delay
-                delay_str = daily_report(days, hrs, mins, secs)
+                delay_str = daily_report(hrs, mins, secs)
 
                 #whats the source hub
                 src_hub = synchronisers[sync]['url'].replace('https://','').replace('http://','').split('.')[0]
