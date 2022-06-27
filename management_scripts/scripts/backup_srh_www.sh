@@ -7,7 +7,7 @@ then
         echo "Usage: <top level www report dir> < dir to move to> <file age>"
         exit
 fi
-
+echo "test edit on github direct"
 www_dirs=$1
 op_dir="$2/$HOSTNAME" #op should ALWAYS be sorted by host to avoid confusion with other hubs in the backup dir
 age=$3
