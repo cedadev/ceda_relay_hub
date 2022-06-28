@@ -1,7 +1,7 @@
 import os, sys
 #from synchroniser import *
 from dhus_odata_api import *
-from datetime import datetime
+from datetime import datetime,timedelta
 from urllib.parse import urlparse
 import math
 
@@ -74,7 +74,7 @@ def get_delay(creation_date, ingestion_date):
     # whats the difference - timedelta object
     # publication_delay = ingestion_date - creation_date
     publication_delay = creation_date - ingestion_date
-
+    
     return publication_delay
 
 
@@ -85,15 +85,20 @@ def analyse_delay(publication_delay):
     '''
 
     if publication_delay.days < 1:
-        days = 0
+        #days = 0
+        hrs = int(publication_delay.seconds / 3600)
+        mins = int((publication_delay.seconds % 3600) / 60)
+        #secs = publication_delay.seconds - (mins * 60)
+        secs = publication_delay.seconds - ((hrs * 3600) + (mins * 60))
+            
     else:
-        days = int(publication_delay.days)
+        #days = int(publication_delay.days)
+        hrs = 24 + int(publication_delay.seconds / 3600)
+        mins = int((publication_delay.seconds % 3600) / 60)
+        #secs = publication_delay.seconds - (mins * 60)
+        secs = publication_delay.seconds - (((hrs-24) * 3600) + (mins * 60))
 
-    hrs = int(publication_delay.seconds / 3600)
-    mins = int((publication_delay.seconds % 3600) / 60)
-    secs = publication_delay.seconds - ((hrs * 3600) + (mins * 60))
-
-    return days, hrs, mins, secs
+    return hrs, mins, secs
 
 
 def average_delay_hours(dates):
@@ -101,7 +106,7 @@ def average_delay_hours(dates):
     total_delay_secs = []
 
     for date in dates:
-        days, hrs, mins, secs = analyse_delay(date)
+        hrs, mins, secs = analyse_delay(date)
 
         #use total seconds from original dates
         total_delay_secs.append(((days * (3600 *24) + date.seconds)))
@@ -115,12 +120,15 @@ def average_delay_hours(dates):
 
     return delay_hrs, delay_mins
 
-def daily_report(days, hrs, mins, secs):
-    return (f"{str(days).zfill(2)} (days), {str(hrs).zfill(2)}:{str(mins).zfill(2)}:{str(secs).zfill(2)} (HH:MM:SS)")
+
+def daily_report(hrs, mins, secs):
+    return (f"{str(hrs).zfill(2)}:{str(mins).zfill(2)}:{str(secs).zfill(2)} (HH:MM:SS)")
+
 
 def report_line(uid, src_hub_domain, loc_hub_domain, days, hrs, mins, secs, linenum=None):
 
-    delay_str = daily_report(days, hrs, mins, secs)
+    delay_str = daily_report(hrs, mins, secs)
+
     if not linenum:
         print (
             f"Product {uid} on SOURCE hub {src_hub_domain}/ LOCAL hub {loc_hub_domain}: publication delay: {delay_str}")
@@ -141,9 +149,9 @@ if __name__ == '__main__':
 
         publication_delay = get_delay(creation_date, ingestion_date)
 
-        days, hrs, mins, secs = analyse_delay(publication_delay)
+        hrs, mins, secs = analyse_delay(publication_delay)
 
-        report_line(uid, hub_domain, 'N/A', days, hrs, mins, secs)
+        report_line(uid, hub_domain, 'N/A', hrs, mins, secs)
 
     except Exception as ex:
         print (ex)

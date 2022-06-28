@@ -30,8 +30,6 @@ def main(hub_config, email):
 
     synchronisers = synchroniser_summary(get_synchronisers(hub_config))
 
-    print ('just checking vsc git....')
-
     report = ''
     cnt = 0
     warning_flag = False

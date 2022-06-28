@@ -27,6 +27,8 @@ sync2_name='S2B_MSIL1_GLOB_dhr__10022022T154335'
 
 cnt = 1
 
+plot_data = {}
+
 for i in run_map.keys():
 
     revcntr = 1
@@ -53,6 +55,10 @@ for i in run_map.keys():
 
         revcntr+=1
 
+    plot_data[run_map[i]] = sync1_name_lcd
+
     print (f"{cnt},{run_map[i]},{sync1_name_lcd},{sync2_name_lcd}")
 
     cnt += 1
+
+print ("here")
