@@ -10,7 +10,8 @@ from copy import deepcopy
 from optparse import OptionParser, OptionGroup
 
 #from analyse_logs.Sentinel import Sentinel_Product
-from .Sentinel import Sentinel_Product
+#from .Sentinel import Sentinel_Product
+from Sentinel import Sentinel_Product
 
 #from extract_detail_info import get_successful_downloads
 
