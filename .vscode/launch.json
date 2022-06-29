@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Publication delay",
+            "type": "python",
+            "request": "launch",
+            "program": "/usr/local/srh_install//ceda_relay_hub/management_scripts/python/dhus/report_publication_delay.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": ["-l", "/srh/data/logs//dhus.log", "-S", "/usr/local/srh_install//hub_creds", "--line", "-v", "-n", "5", "-c", "/usr/local/srh_install//hub_creds/srh-services5.cfg"]
+        },
+        {
+            "name": "Python: dhus performance report",
+            "type": "python",
+            "request": "launch",
+            "program": "/usr/local/srh_install/ceda_relay_hub/management_scripts/python/analyse_logs/ceda_dhus_log_summary.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-l",
+                "/srh/data/logs/dhus.log"
+            ],
+            "justMyCode": true
+        }
+    ]
+}

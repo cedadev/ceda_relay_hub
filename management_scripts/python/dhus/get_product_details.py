@@ -109,7 +109,8 @@ def average_delay_hours(dates):
         hrs, mins, secs = analyse_delay(date)
 
         #use total seconds from original dates
-        total_delay_secs.append(((days * (3600 *24) + date.seconds)))
+        #total_delay_secs.append(((days * (3600 *24) + date.seconds)))
+        total_delay_secs.append(secs)
 
     delay = sum([i for i in total_delay_secs]) / len(total_delay_secs) / 3600
 
@@ -125,7 +126,7 @@ def daily_report(hrs, mins, secs):
     return (f"{str(hrs).zfill(2)}:{str(mins).zfill(2)}:{str(secs).zfill(2)} (HH:MM:SS)")
 
 
-def report_line(uid, src_hub_domain, loc_hub_domain, days, hrs, mins, secs, linenum=None):
+def report_line(uid, src_hub_domain, loc_hub_domain, hrs, mins, secs, linenum=None):
 
     delay_str = daily_report(hrs, mins, secs)
 

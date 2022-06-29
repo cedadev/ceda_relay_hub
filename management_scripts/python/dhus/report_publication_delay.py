@@ -20,7 +20,12 @@ __revision__ = '$Id$'
 
 import sys, os
 
-sys.path.append("..")
+#sys.path.append("..")
+
+#see https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
+#fudged for now - best way is to package it up...
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 import click
 from click import command, option, Option, UsageError
@@ -28,8 +33,11 @@ from collections import defaultdict
 import random
 import datetime
 
-from dhus.get_product_details import get_product_details, report_line, average_delay_hours, analyse_delay, get_delay, UIDnotOnHubError
+#from dhus.get_product_details import get_product_details, report_line, average_delay_hours, analyse_delay, get_delay, UIDnotOnHubError
+from get_product_details import get_product_details, report_line, average_delay_hours, analyse_delay, get_delay, UIDnotOnHubError
+#from analyse_logs.extract_detail_info import get_successful_downloads, get_date_from_logline
 from analyse_logs.extract_detail_info import get_successful_downloads, get_date_from_logline
+#from analyse_logs.ceda_dhus_log_summary import find_log_files
 from analyse_logs.ceda_dhus_log_summary import find_log_files
 
 #from dhus.synchroniser import get_hub_creds
@@ -228,8 +236,8 @@ def generate_report(source_configs, local_hub_config, verbose, successful_syncs,
                     print(f"(Sampling {sample_number} of {len(uids_by_product_type[source][product])})")
 
                 for sorted_dt_uid in delays_by_product_type[source][product].keys():
-                    days, hrs, mins, secs = analyse_delay(delays_by_product_type[source][product][sorted_dt_uid])
-                    report_line(sorted_dt_uid, src_hub_domain, loc_hub_domain, days, hrs, mins, secs, linenum=cnt)
+                    hrs, mins, secs = analyse_delay(delays_by_product_type[source][product][sorted_dt_uid])
+                    report_line(sorted_dt_uid, src_hub_domain, loc_hub_domain, hrs, mins, secs, linenum=cnt)
                     cnt += 1
                 print("\n")
 
