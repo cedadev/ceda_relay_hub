@@ -58,7 +58,16 @@ def create_synchroniser(sync_template, params, src_hub, src_uname, src_password,
         #pull out filter for label name
         if filter is None:
             if 'D_FILTERPARAM' in hook:
-                filter_name = value.replace("startswith(Name,'","").replace("')","") #this is the convention if using a sync template file
+                
+                #deal with different ODATA filter types
+                if 'startswith' in value:
+                    filter_name = value.replace("startswith(Name,'","").replace("')","") #this is the convention if using a sync template file
+
+                elif 'substringof' in value: 
+                    filter_name = value.replace("substringof","").replace("'","").replace("(","").replace(")","").replace(", Name","").replace("'","").replace("_","")#yes hprrible but no time
+
+                else:
+                    filter_name = value #FUDGE alert.
 
         else:
             filter_name = filter
