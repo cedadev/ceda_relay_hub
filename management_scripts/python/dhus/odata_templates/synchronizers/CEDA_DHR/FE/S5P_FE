@@ -3,4 +3,4 @@ D_PAGESIZE=100
 D_COPYPRODUCT=false
 D_REQUEST=stop
 D_FILTERPARAM=startswith(Name,'S5')
-D_REMOTEINCOMING=/srh_data_incoming_4/srh-services7.ceda.ac.uk//data-archive/var/incoming/
+D_REMOTEINCOMING=/srh_data_incoming_4/srh-services4.ceda.ac.uk/data-archive/var/incoming/

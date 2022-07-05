@@ -5,3 +5,4 @@ D_MAX_PRODUCTS=1000
 D_SOFT_EVICTION=false
 D_COPYPRODUCT=true
 D_ACTIVE=false
+D_FILTERPARAM=startswith(Name,'*')
