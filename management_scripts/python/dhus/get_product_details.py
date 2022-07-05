@@ -104,14 +104,15 @@ def analyse_delay(publication_delay):
 def average_delay_hours(dates):
 
     total_delay_secs = []
-
+    #why not just use the delta.secs()?  and what about days...?
     for date in dates:
         hrs, mins, secs = analyse_delay(date)
 
         #use total seconds from original dates
-        #total_delay_secs.append(((days * (3600 *24) + date.seconds)))
-        total_delay_secs.append(secs)
 
+        #total_delay_secs.append(((days * (3600 *24) + date.seconds)))
+        total_delay_secs.append((hrs*3600) + (mins*60) +secs)
+        
     delay = sum([i for i in total_delay_secs]) / len(total_delay_secs) / 3600
 
     delay_hrs = math.floor(delay)

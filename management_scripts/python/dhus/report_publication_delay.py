@@ -135,7 +135,8 @@ def generate_report(source_configs, local_hub_config, verbose, successful_syncs,
     uids_by_product_type = {}
     for source in source_configs.keys():
 
-        source_hub_config = source_configs[source]
+        #Bug: noticed 05/07/2022 - in logs where more than one source hub needed for pub-delay report this was only ever set to one....
+        #source_hub_config = source_configs[source]
 
         # slice uid list of retrieved data products by product type
         uids_by_product = {}
@@ -187,7 +188,7 @@ def generate_report(source_configs, local_hub_config, verbose, successful_syncs,
 
                 # get pub time on source hub
                 try:
-                    src_hub_domain, src_creation_date, src_ingestion_date = get_product_details(source_hub_config, uid)
+                    src_hub_domain, src_creation_date, src_ingestion_date = get_product_details(source_configs[source], uid)
 
                     loc_hub_domain, loc_creation_date, loc_ingestion_date  = get_product_details(local_hub_config, uid)
 
