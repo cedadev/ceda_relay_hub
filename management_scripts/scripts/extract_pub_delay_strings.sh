@@ -25,7 +25,7 @@ scan_directory () {
                         data=`cat $found_file | grep 'Source:' $found_file | grep  $hub_str | awk '{print $(NF-1)}'`
                         datalen=`expr "$data" : '.*'`
 
-                        if [ $datalen != 0 ]
+                        if [ $datalen != 0 ] && [ $data != "source" ]
                         then
                                 echo $data
 
