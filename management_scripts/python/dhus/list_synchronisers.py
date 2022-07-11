@@ -9,7 +9,6 @@ from get_product_details import analyse_delay, daily_report, get_delay
 from dhus_odata_api import *
 
 PUB_DELAY = 4 #hours!
-WARN_DELAY = 2 #hours  Setup warning if this exceeded
 SYNC_STATUS = ['RUNNING', 'PENDING', 'STOPPED'] #in order we want them appearing in the log
 
 #todo: do we need to send a warning if a synchroniser is stopped?  Yes? - long term should be deleted....
@@ -18,8 +17,8 @@ def delay_warning(hrs):
     #Method to calculate what warning sent depending on values defined
     warning = None
     
-    if hrs < PUB_DELAY and hrs > WARN_DELAY:
-        warning = f"[WARNING! Warning threshold exceeded {WARN_DELAY} (Publication delay {PUB_DELAY} hrs NOT exceeded!)]"
+    if hrs > PUB_DELAY:
+        warning = f"[WARNING! LCD threshold exceeded ({PUB_DELAY} hours)]"
 
     return warning
 
