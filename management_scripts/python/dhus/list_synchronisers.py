@@ -17,7 +17,7 @@ def delay_warning(hrs):
     #Method to calculate what warning sent depending on values defined
     warning = None
     
-    if hrs > PUB_DELAY:
+    if hrs >= PUB_DELAY:
         warning = f"[WARNING! LCD threshold exceeded ({PUB_DELAY} hours)]"
 
     return warning
