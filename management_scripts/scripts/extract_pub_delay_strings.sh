@@ -85,7 +85,7 @@ do
         retlen=`expr "$retval" : '.*'`
 
         #note if successful string should be 17 - but some weirdness might occur so this works better than testing for 0
-        if [ $retlen -gt "5" ]
+        if [ $retlen -ge "5" ]
         then
                 echo "${year}-${month}-${day},${retval}"
 
