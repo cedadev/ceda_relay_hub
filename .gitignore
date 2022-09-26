@@ -5,3 +5,17 @@ management_scripts/python/analyse_logs/__pycache__/Sentinel.cpython-36.pyc
 management_scripts/python/dhus/__pycache__/__init__.cpython-36.pyc
 management_scripts/python/dhus/__pycache__/dhus_odata_api.cpython-36.pyc
 management_scripts/python/dhus/__pycache__/get_product_details.cpython-36.pyc
+.vscode/launch-List_synchronisers.json
+.vscode/launch.json
+.idea/.name
+.idea/ceda_SRH_scripts.iml
+.idea/deployment.xml
+.idea/misc.xml
+.idea/other.xml
+.idea/workspace.xml
+.vscode/launch-List_synchronisers.json
+.vscode/launch.json
+management_scripts/python/analyse_logs/__pycache__/__init__.cpython-37.pyc
+management_scripts/python/analyse_logs/__pycache__/ceda_dhus_log_summary.cpython-37.pyc
+management_scripts/python/analyse_logs/__pycache__/extract_detail_info.cpython-37.pyc
+management_scripts/python/analyse_logs/__pycache__/Sentinel.cpython-37.pyc

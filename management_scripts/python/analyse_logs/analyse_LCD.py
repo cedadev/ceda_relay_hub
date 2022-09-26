@@ -43,22 +43,38 @@ for i in run_map.keys():
     #go to line number in file
     while revcntr <= 7: #safety line
 
-        analyse_line = lines[i-revcntr]
+        #need to protect start of file
+        index_line = i-revcntr
+        if index_line < 0:
+            break
+
+        analyse_line = lines[index_line]
+        #print (analyse_line)
+
+        #make sure we don't "break" through to the previous run
+        if 'Synchroniser status' in analyse_line:
+            break
 
         #search backwards (upwards in file!) and find FIRST instances of sync entry..
         for sync in syncs:
             if sync in analyse_line:
                 if sync not in sync_lcds.keys():
-                    sync_lcds[sync] = analyse_line.split(' ')[15]
+                    #sync_lcds[sync] = analyse_line.split(' ')[15]
+                    #need to use the "publication_delay=" as the hook for the LCD
+                    for j in analyse_line.split(","):
+                        if 'publication_delay' in j:
+                            sync_lcds[sync] = j.split("=")[-1].replace(" ","").replace("(HH:MM:SS)","")
 
         revcntr+=1
 
+    plot_data[run_map[i]] = sync_lcds
+
     #pad out any unused synchronisers to make it easier to print out later
     for available_sync in syncs:
-        if available_sync not in plot_data.keys():
-            plot_data[available_sync] = 'NULL'
+        if available_sync not in plot_data[run_map[i]].keys():
+            plot_data[run_map[i]][available_sync] = '' #google sheets doesnt like "NULL"
 
-    plot_data[run_map[i]] = sync_lcds
+    
     cnt += 1
 
 #print column headers
