@@ -6,10 +6,10 @@
 # Source-to-Primary (alignment of source hub with primary hub).
 # BE-FE (alignment of backend and frontend SRH hubs).
 
-if [ $# != 6 ]
+if [ $# != 7 ]
 then
         echo "Usage: <days back to check i.e. 5> <product string i.e. S1A> <primary order config i.e. colhub> <secondary order config i.e. greek> <src-primary config> <BE-FE c
-onfig>"
+onfig: main> <BE-FE config: secondary>"
         echo "Note: configs must be the alignment reporting configs that check use at least TWO hubs with reference usually colhub and another hub i.e SRH or airbus etc"
         exit
 fi
@@ -20,6 +20,7 @@ primary=$3
 secondary=$4
 sourceTOprimary=$5
 be_to_fe=$6
+be_to_fe2=$7
 
 script_loc="/usr/local/srh_install//sentinel/python/Find_Sentinel_Data.py"
 
@@ -36,7 +37,7 @@ do
         echo "Report for ${days_ago} (${i} days ago):"
 
         cnt=1
-        for j in "${primary}" "${secondary}" "${sourceTOprimary}" "${be_to_fe}" ;do
+        for j in "${primary}" "${secondary}" "${sourceTOprimary}" "${be_to_fe}" "${be_to_fe2}";do
 
                 #aligned=`python3 $script_loc -c $j -N -S $days_ago -E $days_ago -p $prod_string | grep aligned | awk '{print $4}'`
                 scriptop_ingest=`python3 $script_loc -c $j -N -S $days_ago -E $days_ago -p $prod_string -I`
@@ -50,7 +51,7 @@ do
                 firsthubnum_aqc=`echo "$scriptop_aqc" | grep Identified | head -1 | awk '{print $2}'`
                 secondhubnum_aqc=`echo "$scriptop_aqc" | grep Identified | head -2 | tail -1 | awk '{print $2}'`
                 aligned_aqc=`echo "$scriptop_aqc" | grep aligned | awk '{print $4}'`
-                
+
                 #should always follow this sequence if stick to this convention in the config files.
                 if [ $cnt -eq 1 ]
                 then
@@ -63,7 +64,10 @@ do
                         msg="SOURCE-REFERENCE"
                 elif [ $cnt -eq 4 ]
                 then
-                        msg="BE-FE"
+                        msg="BE-FE (Main)"
+                elif [ $cnt -eq 5 ]
+                then
+                        msg="BE-FE (Secondary)"
                 fi
 
                 #get some summary info so can see which hubs are synchronising
