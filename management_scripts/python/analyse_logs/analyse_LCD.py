@@ -1,9 +1,15 @@
 import sys
 
+#hook used as demarcation between entries
+ENTRY_SEGMENT_IDENTIFIER = 'dhus for hub'
+
+#KPI publication limit in hours
+KPI_PUB_DELAY_THRESHOLD = '04:00:00'
+
 log = sys.argv[1]
 
 with open(log, 'r') as f:
-        lines = [i.rstrip() for i in f.readlines()]
+    lines = [i.rstrip() for i in f.readlines()]
 
 #print (f"{len(lines)}")
 
@@ -18,7 +24,7 @@ for line in lines:
 run_map = {}
 line_count = 1
 for line in lines:
-    if 'dhus for hub' in line:
+    if ENTRY_SEGMENT_IDENTIFIER in line:
         
         #extract datetime for this run
         run_map[line_count] = f"{line.split(' ')[-2]} {line.split(' ')[-1]}"
@@ -48,11 +54,11 @@ for i in run_map.keys():
         if index_line < 0:
             break
 
-        analyse_line = lines[index_line]
+        analyse_line = lines[index_line-1] #make sure you counter for list 0 index ;)
         #print (analyse_line)
 
         #make sure we don't "break" through to the previous run
-        if 'Synchroniser status' in analyse_line:
+        if ENTRY_SEGMENT_IDENTIFIER in analyse_line:
             break
 
         #search backwards (upwards in file!) and find FIRST instances of sync entry..
@@ -78,7 +84,7 @@ for i in run_map.keys():
     cnt += 1
 
 #print column headers
-print(f"Date,{','.join(str(x) for x in syncs)}")
+print(f"Date,{','.join(str(x) for x in syncs)},KPI THRESHOLD ({KPI_PUB_DELAY_THRESHOLD})")
 
 for i in run_map.keys():
 
@@ -88,4 +94,4 @@ for i in run_map.keys():
 
     #construct one line string
     lsyncs = [plot_data[run_map[i]][j] for j in syncs]
-    print (f"{run_map[i]},{','.join(str(x) for x in lsyncs)}")
+    print (f"{run_map[i]},{','.join(str(x) for x in lsyncs)},{KPI_PUB_DELAY_THRESHOLD}")
