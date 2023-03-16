@@ -87,6 +87,24 @@
             ]
         },
         {
+            "name": "Create S5P synchroniser",
+            "type": "python",
+            "request": "launch",
+            "program": "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/create_synchroniser.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "-c",
+                "/usr/local/software/srh_credentials/srh-services4.cfg",
+                "-p",
+                "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/odata_templates/synchronizers/CEDA_DHR/Sentinel5p/S5P",
+                "-l",
+                "2023-02-28T10:00:00",
+                "-s",
+                "/usr/local/software/srh_credentials/zamg.cfg"
+            ]
+        },
+        {
             "name": "list synchronisers",
             "type": "python",
             "request": "launch",
@@ -95,7 +113,7 @@
             "justMyCode": true,
             "args": [
                 "-c",
-                "/usr/local/software/srh_credentials/srh-services5.cfg"
+                "/usr/local/software/srh_credentials/srh-services4.cfg"
             ]
         },
         {

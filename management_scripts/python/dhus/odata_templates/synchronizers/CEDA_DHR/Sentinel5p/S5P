@@ -1,5 +1,5 @@
 D_SCHEDULE=0 */2 * * * ?
-D_PAGESIZE=10
+D_PAGESIZE=15
 D_COPYPRODUCT=true
 D_REQUEST=stop
-D_FILTERPARAM=startswith(Name,'S5P')
+D_FILTERPARAM=startswith(Name,'S5P') not substringof('_RPRO_',Name) and not substringof('_03_',Name)
