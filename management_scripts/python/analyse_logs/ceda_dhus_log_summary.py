@@ -371,7 +371,12 @@ def analyse_evicted_products(evicted_products):
             #get total volume
             tot_size=0.
             for size in sizes:
-                tot_size +=float(size)
+
+                #log files get mangled so need to catch any errors
+                try:
+                    tot_size +=float(size)
+                except Exception as ex:
+                    print (f"WARNING: Unable to convert file size '{size}' ")
 
             #tot_size = tot_size/(1024*1024*1024) # bytes converted to GB
             tot_size/=(1024*1024*1024) # bytes converted to GB

@@ -140,11 +140,11 @@
             "name": "Python: dhus performance report",
             "type": "python",
             "request": "launch",
-            "program": "/usr/local/srh_install/ceda_relay_hub/management_scripts/python/analyse_logs/ceda_dhus_log_summary.py",
+            "program": "/usr/local/software/ceda_relay_hub/management_scripts/python/analyse_logs/ceda_dhus_log_summary.py",
             "console": "integratedTerminal",
             "args": [
                 "-l",
-                "/srh/data/logs/dhus.log"
+                "/usr/local/temp/dhus-2023-03-20.log"
             ],
             "justMyCode": true
         }
