@@ -540,9 +540,6 @@ def log_filter(logfile, filters, butnot=None):
     #summarise log info we're looking for into separate lists
     for line in logfile:
 
-        if 'atTcom.sun.xml.bind.v2.runtime[3.0.8-osf' in line:  atTcom.sun.xml.bind.v2.runtime[3.0.8-osf
-            print ('here')
-
         if line.count(logline_start_chars) > 1:
             mangled_logline_count += 1
 
