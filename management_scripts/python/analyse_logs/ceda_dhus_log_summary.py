@@ -529,20 +529,34 @@ def log_filter(logfile, filters, butnot=None):
     :return: list of lines extracted based on the filter
     '''
 
+    #2023: Noticing lots of warnings from mangled log lines where for some reason the preceding line is chopped and a a new log line
+    #starts immediately with no newline char.  Need to get rid of these before processing
+    dhus_version_re=re.compile("\[(.*?)\]")
+    logline_start_chars=dhus_version_re.search(logfile[0]).group(0).replace("[","").replace("]","")
+    mangled_logline_count = 0
+
     pre_filtered_text = filtered_text = []
 
     #summarise log info we're looking for into separate lists
     for line in logfile:
 
-        match = True
+        if 'atTcom.sun.xml.bind.v2.runtime[3.0.8-osf' in line:  atTcom.sun.xml.bind.v2.runtime[3.0.8-osf
+            print ('here')
 
-        #find lines containing the text we want first...
-        for filter in filters:
-            if filter not in line:
-                match = False
+        if line.count(logline_start_chars) > 1:
+            mangled_logline_count += 1
 
-        if match:
-            pre_filtered_text.append(deepcopy(line))
+        else:
+            #skip the mangled logline
+            match = True
+
+            #find lines containing the text we want first...
+            for filter in filters:
+                if filter not in line:
+                    match = False
+
+            if match:
+                pre_filtered_text.append(deepcopy(line))
 
     if butnot:
         #NOW check if any NOT text is present, in which case ignore
@@ -553,10 +567,10 @@ def log_filter(logfile, filters, butnot=None):
                 if notfilter in line:
                     filtered_text.remove(line)
 
-        return filtered_text
+        return filtered_text, mangled_logline_count
 
     else:
-        return pre_filtered_text
+        return pre_filtered_text, mangled_logline_count
 
 
 def download_report_success(logfiles):
@@ -608,7 +622,7 @@ def download_report(logfiles, filter_list, title):
             raise Exception("ERROR: Unable to open logile: %s (%s)" %(logfilename, ex))
 
         try:
-            filtered_log = log_filter(log, filter_list) # this is the hook we're looking for.
+            filtered_log, mangled_lines = log_filter(log, filter_list) # this is the hook we're looking for.
 
         except Exception as ex:
             raise Exception( "ERROR: Unable to open logfile: %s (%s)" %(logfilename, ex))
@@ -762,6 +776,9 @@ def download_report(logfiles, filter_list, title):
     report += "\nTotal number of users active: %s" %len(download_volume.keys())
     report +=f"\nTotal number of products: {sum([len(download_products[i]) for i in download_products.keys()])}"
     report += "\nTotal download duration (s): %s (%.2f hrs)\n\n" %(total_download_secs,total_download_secs/3600)
+
+    if mangled_lines > 0:
+        report += f"\nWARNING: {mangled_lines} unparseable lines in logfile!\n"
 
     return report
 
@@ -939,7 +956,7 @@ def synchronizer_report(logfiles, write_products = None):
             raise Exception("ERROR: Unable to open logile: %s (%s)" %(logfilename, ex))
 
         try:
-            filtered_log = log_filter(log, ["Synchronizer#"])
+            filtered_log, mangled_lines = log_filter(log, ["Synchronizer#"])
 
         except Exception as ex:
             raise Exception( "ERROR: Unable to open logfile: %s (%s)" %(logfilename, ex))
@@ -1027,6 +1044,9 @@ def synchronizer_report(logfiles, write_products = None):
 
     report_line += "\n*********************** Synchronizer Report ************************\n"
 
+    if mangled_lines > 0:
+        report_line += f"\nWARNING: {mangled_lines} unparseable lines in logfile!\n"
+
     report_line += "Report timestamp; %s\n\n" %datetime.now().strftime("%d-%m-%yT%H:%M:%S")
 
     report_line += "Total number of products attempted to be synchronised; %s\n" %(sum(total_good.values()) + sum(total_bad.values()))
@@ -1094,7 +1114,7 @@ def eviction_report(logfiles, write_products = None):
             raise Exception("ERROR: Unable to open logile: %s (%s)" %(logfilename, ex))
 
         try:
-            filtered_log = log_filter(log, ["Evicted"], butnot=['No product'])
+            filtered_log, mangled_lines = log_filter(log, ["Evicted"], butnot=['No product'])
 
         except Exception as ex:
             raise Exception( "ERROR: Unable to open logfile: %s (%s)" %(logfilename, ex))
@@ -1126,6 +1146,9 @@ def eviction_report(logfiles, write_products = None):
 
     #now summarise eviction report
     report_line = "\n*********************** Eviction Report ************************"
+
+    if mangled_lines > 0:
+        report_line += f"\nWARNING: {mangled_lines} unparseable lines in logfile!\n"
 
     #report_line +=  "\nSynchronizer\tProduct\tTot downloaded\tTot Size(Gb)\tTime Start\tTime End\tSens Date Start\tSens Date End\n"
     if len(eviction_overview.keys()) != 0:
