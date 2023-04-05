@@ -537,6 +537,8 @@ def log_filter(logfile, filters, butnot=None):
 
     pre_filtered_text = filtered_text = []
 
+    logline_start_chars = f"[{logline_start_chars}]"
+
     #summarise log info we're looking for into separate lists
     for line in logfile:
 

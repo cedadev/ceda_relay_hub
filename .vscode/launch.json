@@ -144,7 +144,7 @@
             "console": "integratedTerminal",
             "args": [
                 "-l",
-                "/usr/local/temp/dhus-2023-03-20.log"
+                "/usr/local/temp/dhus.log.srh8_03042022"
             ],
             "justMyCode": true
         }
