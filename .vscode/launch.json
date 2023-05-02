@@ -23,13 +23,13 @@
             "justMyCode": true,
             "args": [
                 "-c",
-                "/usr/local/software/srh_credentials/srh-services7.cfg",
+                "/usr/local/software/srh_credentials/srh-services4.cfg",
                 "-p",
                 "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/odata_templates/synchronizers/CEDA_DHR/Sentinel1/S1A_BE",
                 "-l",
-                "2023-03-01T09:29:00",
+                "2023-05-02T00:00:00",
                 "-s",
-                "/usr/local/software/srh_credentials/airbus.cfg"
+                "/usr/local/software/srh_credentials/metno.cfg"
             ]
         },
         {
