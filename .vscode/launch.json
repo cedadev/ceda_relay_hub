@@ -27,9 +27,9 @@
                 "-p",
                 "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/odata_templates/synchronizers/CEDA_DHR/Sentinel1/S1A_BE",
                 "-l",
-                "2023-05-02T00:00:00",
+                "2023-05-18T14:15:21",
                 "-s",
-                "/usr/local/software/srh_credentials/metno.cfg"
+                "/usr/local/software/srh_credentials/airbus.cfg"
             ]
         },
         {
