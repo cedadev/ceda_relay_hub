@@ -8,8 +8,7 @@
 
 if [ $# != 7 ]
 then
-        echo "Usage: <days back to check i.e. 5> <product string i.e. S1A> <primary order config i.e. colhub> <secondary order config i.e. greek> <src-primary config> <BE-FE c
-onfig: main> <BE-FE config: secondary>"
+        echo "Usage: <days back to check i.e. 5> <product string i.e. S1A> <primary order config i.e. colhub> <secondary order config i.e. greek> <src-primary config> <BE-FE config: main> <BE-FE config: secondary>"
         echo "Note: configs must be the alignment reporting configs that check use at least TWO hubs with reference usually colhub and another hub i.e SRH or airbus etc"
         exit
 fi
@@ -23,6 +22,9 @@ be_to_fe=$6
 be_to_fe2=$7
 
 script_loc="/srh_data_incoming_6/dhus_monitor_software/sentinel/python/Find_Sentinel_Data.py"
+
+#on new rocky VM's we are using a single code directory but each VM has it's own venv.  This var is the symlink to where the VM specific venv is
+python_venv="/srh_data_incoming_6/dhus_monitor_software/vm_specific/pyvenv"
 
 #primary="/usr/local/srh_install/reporting//config//alignment_reporting_PRIMARY.cfg"
 #secondary="/usr/local/srh_install/reporting//config//alignment_reporting_SECONDARY.cfg"
@@ -40,8 +42,8 @@ do
         for j in "${primary}" "${secondary}" "${sourceTOprimary}" "${be_to_fe}" "${be_to_fe2}";do
 
                 #aligned=`python3 $script_loc -c $j -N -S $days_ago -E $days_ago -p $prod_string | grep aligned | awk '{print $4}'`
-                scriptop_ingest=`python3 $script_loc -c $j -N -S $days_ago -E $days_ago -p $prod_string -I`
-                scriptop_aqc=`python3 $script_loc -c $j -N -S $days_ago -E $days_ago -p $prod_string`
+                scriptop_ingest=`$python_venv $script_loc -c $j -N -S $days_ago -E $days_ago -p $prod_string -I`
+                scriptop_aqc=`$python_venv $script_loc -c $j -N -S $days_ago -E $days_ago -p $prod_string`
 
                 #need double quotes to preserve script op structure https://stackoverflow.com/questions/613572/capturing-multiple-line-output-into-a-bash-variable
                 firsthubnum_ingest=`echo "$scriptop_ingest" | grep Identified | head -1 | awk '{print $2}'`
