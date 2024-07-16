@@ -22,7 +22,7 @@ sourceTOprimary=$5
 be_to_fe=$6
 be_to_fe2=$7
 
-script_loc="/usr/local/srh_install//sentinel/python/Find_Sentinel_Data.py"
+script_loc="/srh_data_incoming_6/dhus_monitor_software/sentinel/python/Find_Sentinel_Data.py"
 
 #primary="/usr/local/srh_install/reporting//config//alignment_reporting_PRIMARY.cfg"
 #secondary="/usr/local/srh_install/reporting//config//alignment_reporting_SECONDARY.cfg"
