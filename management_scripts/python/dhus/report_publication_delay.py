@@ -238,7 +238,7 @@ def generate_report(source_configs, local_hub_config, verbose, successful_syncs,
 
                 for sorted_dt_uid in delays_by_product_type[source][product].keys():
                     hrs, mins, secs = analyse_delay(delays_by_product_type[source][product][sorted_dt_uid])
-                    report_line(sorted_dt_uid, src_hub_domain, loc_hub_domain, hrs, mins, secs, linenum=cnt)
+                    report_line(sorted_dt_uid, source, loc_hub_domain, hrs, mins, secs, linenum=cnt)
                     cnt += 1
                 print("\n")
 

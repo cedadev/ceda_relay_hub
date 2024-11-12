@@ -133,11 +133,11 @@ def report_line(uid, src_hub_domain, loc_hub_domain, hrs, mins, secs, linenum=No
 
     if not linenum:
         print (
-            f"Product {uid} on SOURCE hub {src_hub_domain}/ LOCAL hub {loc_hub_domain}: publication delay: {delay_str}")
+            f"Product {uid} on SOURCE hub {src_hub_domain} / LOCAL hub {loc_hub_domain}: publication delay: {delay_str}")
 
     else:
         print(
-            f"{linenum} Product {uid} on SOURCE hub {src_hub_domain}/ LOCAL hub {loc_hub_domain}: publication delay: {delay_str}")
+            f"{linenum} Product {uid} on SOURCE hub {src_hub_domain} / LOCAL hub {loc_hub_domain}: publication delay: {delay_str}")
 
 
 if __name__ == '__main__':
