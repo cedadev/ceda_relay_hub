@@ -21,7 +21,7 @@ sourceTOprimary=$5
 be_to_fe=$6
 be_to_fe2=$7
 
-script_loc="/srh_data_incoming_6/dhus_monitor_software/sentinel/python/Find_Sentinel_Data.py"
+script_loc="/srh_data_incoming_7/dhus_monitor_software/sentinel/python/Find_Sentinel_Data.py"
 
 #on new rocky VM's we are using a single code directory but each VM has it's own venv.  
 python_venv="/usr/local/srh_install/reporting/reporting_venv/bin/python"
