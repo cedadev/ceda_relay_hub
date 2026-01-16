@@ -1,16 +1,10 @@
 import os, sys
 #from synchroniser import *
-from dhus_odata_api import *
+#from dhus_odata_api import *
 from datetime import datetime,timedelta
 from urllib.parse import urlparse
 import math
 
-'''
-Run from shell after parsing dhus log file for successfully downloaded files for UID's using shell incantation command like this:
-
- grep  'successfully downloaded from' /srh/data/logs/dhus.log | awk '{print $12}' | head -100  | sed -n "s/.*\(Products[(]'[0-9 a-z -].*'[)]\).*/\1/p" | sed 's/Products//g' | sed "s/[(,)']//g" | tr '/' '\t' | awk '{print $1}' | sort -u
-
-'''
 
 CR_DATE_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices/metadata}properties/{http://schemas.microsoft.com/ado/2007/08/dataservices}CreationDate'
 IN_DATE_XP = '{http://schemas.microsoft.com/ado/2007/08/dataservices/metadata}properties/{http://schemas.microsoft.com/ado/2007/08/dataservices}IngestionDate'
@@ -124,7 +118,7 @@ def average_delay_hours(dates):
 
 
 def daily_report(hrs, mins, secs):
-    return (f"{str(hrs).zfill(2)}:{str(mins).zfill(2)}:{str(secs).zfill(2)} (HH:MM:SS)")
+    return (f"{str(hrs).zfill(2)}:{str(mins).zfill(2)}:{str(secs).zfill(2)}")
 
 
 def report_line(uid, src_hub_domain, loc_hub_domain, hrs, mins, secs, linenum=None):

@@ -5,116 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Create eviction",
-            "type": "python",
+             "name": "srh18 LCD monitor",
+            "type": "debugpy",
             "request": "launch",
-            "program": "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/create_eviction.py",
+            "program": "C:\\workspace\\ceda_relay_hub\\management_scripts\\python\\monitor\\get_all_LCD.py",
             "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": ["-p","/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/odata_templates/eviction_templates/CEDA_DHR/Sentinel2/s2",
-        "-c", "/usr/local/software/srh_credentials/srh-services7.cfg"]
-        },
-        {
-            "name": "Create S1 synchroniser",
-            "type": "python",
-            "request": "launch",
-            "program": "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/create_synchroniser.py",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": [
-                "-c",
-                "/usr/local/software/srh_credentials/srh-services4.cfg",
-                "-p",
-                "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/odata_templates/synchronizers/CEDA_DHR/Sentinel1/S1A_BE",
-                "-l",
-                "2023-05-18T14:15:21",
-                "-s",
-                "/usr/local/software/srh_credentials/airbus.cfg"
-            ]
-        },
-        {
-            "name": "Create S2 L1 synchroniser",
-            "type": "python",
-            "request": "launch",
-            "program": "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/create_synchroniser.py",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": [
-                "-c",
-                "/usr/local/software/srh_credentials/srh-services4.cfg",
-                "-p",
-                "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/odata_templates/synchronizers/CEDA_DHR/Sentinel2/S2_MSIL1",
-                "-l",
-                "2023-03-01T00:19:00",
-                "-s",
-                "/usr/local/software/srh_credentials/airbus.cfg"
-            ]
-        },
-        {
-            "name": "Create S1 L1 FE synchroniser",
-            "type": "python",
-            "request": "launch",
-            "program": "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/create_synchroniser.py",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": [
-                "-c",
-                "/usr/local/software/srh_credentials/srh-services8.cfg",
-                "-p",
-                "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/odata_templates/synchronizers/CEDA_DHR/FE/S1_FE",
-                "-l",
-                "2023-03-01T09:30:30",
-                "-s",
-                "/usr/local/software/srh_credentials/srh-services7.cfg"
-            ]
-        },
-        {
-            "name": "Create S2 L2 synchroniser",
-            "type": "python",
-            "request": "launch",
-            "program": "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/create_synchroniser.py",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": [
-                "-c",
-                "/usr/local/software/srh_credentials/srh-services7.cfg",
-                "-p",
-                "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/odata_templates/synchronizers/CEDA_DHR/Sentinel2/S2A_MSIL2A",
-                "-l",
-                "2023-02-28T10:00:00",
-                "-s",
-                "/usr/local/software/srh_credentials/colhub3.cfg"
-            ]
-        },
-        {
-            "name": "Create S5P synchroniser",
-            "type": "python",
-            "request": "launch",
-            "program": "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/create_synchroniser.py",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": [
-                "-c",
-                "/usr/local/software/srh_credentials/srh-services4.cfg",
-                "-p",
-                "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/odata_templates/synchronizers/CEDA_DHR/Sentinel5p/S5P",
-                "-l",
-                "2023-02-28T10:00:00",
-                "-s",
-                "/usr/local/software/srh_credentials/zamg.cfg"
-            ]
-        },
-        {
-            "name": "list synchronisers",
-            "type": "python",
-            "request": "launch",
-            "program": "/usr/local/software/ceda_relay_hub/management_scripts/python/dhus/list_synchronisers.py",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": [
-                "-c",
-                "/usr/local/software/srh_credentials/srh-services4.cfg"
-            ]
+            "args": ["-e","steve.donegan@stfc.ac.uk", "-c", "C:\\workspace\\ceda_relay_hub\\management_scripts\\python\\monitor\\stfc_catalogue.cfg"],
+             
         },
         {
             "name": "Publication delay",
