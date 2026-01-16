@@ -5,6 +5,8 @@
 
 #Use a summary script to summarise entries for inclusion in DHR KPI report.
 
+#NOTE use yum install postgresql postgresql-devel python-devel for install of pyscopg2 on rocky
+
 import os
 import sys
 import datetime
