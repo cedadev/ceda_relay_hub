@@ -183,7 +183,7 @@ def main(email, catalogue_config):
     try:
         producers = get_all_lcd(database=database, user=user, password=password, host=host, port=port)
 
-        report(producers, email=None)
+        report(producers, email=email)
 
     except Exception as ex:
 
