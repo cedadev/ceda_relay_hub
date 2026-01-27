@@ -115,19 +115,13 @@ def email_report(email, host, content):
         print (f"\nERROR: Could not send email to: {email}")
         sys.exit(1)
 
-
-@click.command()
-@click.option('-c', '--catalogue-config', 'catalogue_config', type=str, required=True, help='Connection details to GSS postgres instance')
-@click.option('-e', '--email', 'email', type=str, help='if supplied will email report ONLY if thresholds exceeded and not output to STDOUT. separate multiple emails with a comma "," ')
-def main(email, catalogue_config):
+def report(producers, email=None, host=None):
+    '''
+    Generate output designed to be concatenated to a file.  
     
-    database, user, password, host, port = get_psql_conf(catalogue_config)
-
-    try:
-        producers = get_all_lcd(database=database, user=user, password=password, host=host, port=port)
-
-    except Exception as ex:
-        print ("catalogue not available")
+    :param producers: output from db connection
+    :param email: optional email - if set will send warning if WARN or FAIL conditions found 
+    '''
 
     report = ''
     cnt = 0
@@ -167,9 +161,9 @@ def main(email, catalogue_config):
             if warning_msg:
                 #report += f"Label: {sync} (id = {synchronisers[sync]['id']}, source = {src_hub}, status = {synchronisers[sync]['status']}, publication_delay = {delay_str}, last creation date = {lcd}) {warning_msg}"
                 report += f"Label: {name} publication_delay = {delay_str} EXCEEDS {PUB_DELAY} threshold (last creation date = {lcd})\n"
-
+                     
     cnt +=1
- 
+
     #send email if requested - remember this will only happen if warning triggered
     if email and warning_flag:
         email_report(email, host, report)        
@@ -177,7 +171,35 @@ def main(email, catalogue_config):
     else:
         #print out all product streams
         print(*[f"{i}," for i in report_struct])
+            
+
+@click.command()
+@click.option('-c', '--catalogue-config', 'catalogue_config', type=str, required=True, help='Connection details to GSS postgres instance')
+@click.option('-e', '--email', 'email', type=str, help='if supplied will email report ONLY if thresholds exceeded and not output to STDOUT. separate multiple emails with a comma "," ')
+def main(email, catalogue_config):
+    
+    database, user, password, host, port = get_psql_conf(catalogue_config)
+
+    try:
+        producers = get_all_lcd(database=database, user=user, password=password, host=host, port=port)
+
+        report(producers, email=None)
+
+    except Exception as ex:
+
+        message =  f"Catalogue not available {ex}"
+
+        if email:
+            email_report(email, host, message)
+
+        else:
+            print (message)     
         
+        
+
+    
+
+    
 
 if __name__ == '__main__':
     main()
