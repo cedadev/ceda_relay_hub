@@ -5,16 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-             "name": "srh18 LCD monitor",
+             "name": "srh18 LCD monitor (with email alert)",
             "type": "debugpy",
             "request": "launch",
             "program": "C:\\workspace\\ceda_relay_hub\\management_scripts\\python\\monitor\\get_all_LCD.py",
             "console": "integratedTerminal",
-            "args": ["-e","steve.donegan@stfc.ac.uk", "-c", "C:\\workspace\\ceda_relay_hub\\management_scripts\\python\\monitor\\stfc_catalogue.cfg"],
+            "args": ["-e","steve.donegan@stfc.ac.uk, wurzelsteve@gmail.com", "-c", "C:\\workspace\\ceda_sentinel_dhs_tools_templates\\stfc_catalogue_srh18.cfg"],
+             
+        },
+          {
+             "name": "srh18 LCD monitor (NO email alert)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "C:\\workspace\\ceda_relay_hub\\management_scripts\\python\\monitor\\get_all_LCD.py",
+            "console": "integratedTerminal",
+            "args": ["-c", "C:\\workspace\\ceda_sentinel_dhs_tools_templates\\stfc_catalogue_srh18.cfg"],
              
         },
         {
-            "name": "Publication delay",
+            "name": "Publication delay - OLD",
             "type": "python",
             "request": "launch",
             "program": "/usr/local/srh_install//ceda_relay_hub/management_scripts/python/dhus/report_publication_delay.py",
@@ -34,14 +43,13 @@
             ]
         },
         {
-            "name": "Python: dhus performance report",
-            "type": "python",
+            "name": "Average publication delay",
+            "type": "debugpy",
             "request": "launch",
-            "program": "/usr/local/software/ceda_relay_hub/management_scripts/python/analyse_logs/ceda_dhus_log_summary.py",
+            "program": "C:\\workspace\\ceda_relay_hub\\management_scripts\\python\\monitor\\average_pub_delay.py",
             "console": "integratedTerminal",
             "args": [
-                "-l",
-                "/usr/local/temp/dhus.log.srh8_03042022"
+                "C:\\workspace\\DHR_2025\\reporting\\sample.txt"
             ],
             "justMyCode": true
         }
