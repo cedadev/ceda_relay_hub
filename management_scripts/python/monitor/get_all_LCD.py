@@ -164,15 +164,14 @@ def report(producers, email=None, host=None):
                      
     cnt +=1
 
+    #print out all product streams
+    print(*[f"{i}," for i in report_struct])
+
     #send email if requested - remember this will only happen if warning triggered
     if email and warning_flag:
         email_report(email, host, report)        
 
-    else:
-        #print out all product streams
-        print(*[f"{i}," for i in report_struct])
-            
-
+     
 @click.command()
 @click.option('-c', '--catalogue-config', 'catalogue_config', type=str, required=True, help='Connection details to GSS postgres instance')
 @click.option('-e', '--email', 'email', type=str, help='if supplied will email report ONLY if thresholds exceeded and not output to STDOUT. separate multiple emails with a comma "," ')
@@ -196,10 +195,5 @@ def main(email, catalogue_config):
             print (message)     
         
         
-
-    
-
-    
-
 if __name__ == '__main__':
     main()

@@ -43,13 +43,42 @@
             ]
         },
         {
-            "name": "Average publication delay",
+            "name": "Average publication delay - generate AVERAGE 2 files",
             "type": "debugpy",
             "request": "launch",
             "program": "C:\\workspace\\ceda_relay_hub\\management_scripts\\python\\monitor\\average_pub_delay.py",
             "console": "integratedTerminal",
-            "args": [
-                "C:\\workspace\\DHR_2025\\reporting\\sample.txt"
+            "args": ["-r","C:\\workspace\\DHR_2025\\reporting\\sample.txt, C:\\workspace\\DHR_2025\\reporting\\sample2.txt", "-a"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "Average publication delay - generate AVERAGE 2 files FILTER BY MONTH",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "C:\\workspace\\ceda_relay_hub\\management_scripts\\python\\monitor\\average_pub_delay.py",
+            "console": "integratedTerminal",
+            "args": ["-r","C:\\workspace\\DHR_2025\\reporting\\sample.txt, C:\\workspace\\DHR_2025\\reporting\\sample2.txt", "-a", "-D", "01-2026"
+            ],
+            "justMyCode": true
+        },
+         {
+            "name": "Average publication delay - generate AVERAGE 1 files",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "C:\\workspace\\ceda_relay_hub\\management_scripts\\python\\monitor\\average_pub_delay.py",
+            "console": "integratedTerminal",
+            "args": ["-r","C:\\workspace\\DHR_2025\\reporting\\sample.txt", "-a"
+            ],
+            "justMyCode": true
+        },
+         {
+            "name": "Average publication delay - OUTPUT to CSV (filter by month)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "C:\\workspace\\ceda_relay_hub\\management_scripts\\python\\monitor\\average_pub_delay.py",
+            "console": "integratedTerminal",
+            "args": ["-r","C:\\workspace\\DHR_2025\\reporting\\sample.txt,C:\\workspace\\DHR_2025\\reporting\\sample2.txt", "-p", "C:\\workspace\\DHR_2025\\reporting\\sample_op3.csv", "-D", "01-2026"
             ],
             "justMyCode": true
         }
