@@ -23,6 +23,22 @@
              
         },
         {
+             "name": "srh18 generate rsync list: S1 products",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "C:\\workspace\\ceda_relay_hub\\management_scripts\\python\\generate_list_from_db.py",
+            "console": "integratedTerminal",
+            "args": ["-c", "C:\\workspace\\ceda_sentinel_dhs_tools_templates\\stfc_catalogue_srh13.cfg",
+                     "-H", "srh-services13.ceda.ac.uk",
+                     "-U", "root",
+                     "-d", "/gws/nopw/j04/ceda_sentinel_2/gss_incoming/s1_iw_slc",
+                     "-P", "S1%_IW_SLC%",
+                     "-D", "2026-02-05",
+                     "-o", "C:\\workspace\\temp\\s1_test_rsync.list",
+                     "-l", "10"],
+             
+        },
+        {
             "name": "Publication delay - OLD",
             "type": "python",
             "request": "launch",
